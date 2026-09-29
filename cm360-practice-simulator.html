@@ -1,0 +1,2411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CM360 Practice Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --font-ui:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace;
+  --bg:#F5F6F4; --surface:#FFFFFF; --surface-2:#FAFBF9; --border:#DCE0E1;
+  --ink:#0E141F; --text:#1B2230; --text-muted:#5B6472; --text-faint:#8B93A0;
+  --accent:#2B5FE2; --accent-hover:#1E4BC4; --accent-soft:#E9EFFD;
+  --amber:#B7791F; --amber-soft:#FBF1E0;
+  --green:#1E8E5A; --green-soft:#E6F4ED;
+  --red:#C4432B; --red-soft:#FBEAE6;
+  --slate:#6B7280; --slate-soft:#EEF0F2;
+  --sidebar-bg:#0E141F; --sidebar-text:#AEB6C2; --sidebar-text-active:#FFFFFF; --sidebar-hover:#1A2233; --sidebar-border:#232C3D;
+  --radius:4px; --radius-lg:8px; --radius-pill:999px;
+  --shadow-modal:0 12px 40px rgba(10,14,22,.35);
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B0F16; --surface:#12171F; --surface-2:#151B24; --border:#262E3A;
+    --ink:#05070B; --text:#E7EAEE; --text-muted:#94A0B2; --text-faint:#6C7789;
+    --accent:#5B8CFF; --accent-hover:#3D6EF0; --accent-soft:#152142;
+    --amber:#E0A83D; --amber-soft:#2A2214;
+    --green:#3FC280; --green-soft:#12261C;
+    --red:#E5695A; --red-soft:#2A1512;
+    --slate:#8A93A6; --slate-soft:#1B212C;
+    --sidebar-bg:#080B11; --sidebar-hover:#141B27; --sidebar-border:#1B2230;
+    --shadow-modal:0 12px 40px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B0F16; --surface:#12171F; --surface-2:#151B24; --border:#262E3A;
+  --ink:#05070B; --text:#E7EAEE; --text-muted:#94A0B2; --text-faint:#6C7789;
+  --accent:#5B8CFF; --accent-hover:#3D6EF0; --accent-soft:#152142;
+  --amber:#E0A83D; --amber-soft:#2A2214;
+  --green:#3FC280; --green-soft:#12261C;
+  --red:#E5695A; --red-soft:#2A1512;
+  --slate:#8A93A6; --slate-soft:#1B212C;
+  --sidebar-bg:#080B11; --sidebar-hover:#141B27; --sidebar-border:#1B2230;
+  --shadow-modal:0 12px 40px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-ui);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased;}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit;}
+a{color:var(--accent);text-decoration:none;}
+code,.mono{font-family:var(--font-mono);}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px;}
+
+#app{min-height:100%;display:flex;}
+
+/* ---------- Sidebar ---------- */
+.sidebar{width:236px;flex:0 0 auto;background:var(--sidebar-bg);color:var(--sidebar-text);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;overflow-y:auto;z-index:40;transition:transform .18s ease;padding-top:env(safe-area-inset-top,0px);}
+.sidebar-brand{display:flex;align-items:center;gap:8px;padding:18px 18px 14px;border-bottom:1px solid var(--sidebar-border);}
+.sidebar-brand .mark{width:26px;height:26px;border-radius:6px;background:linear-gradient(135deg,var(--accent),#8AB0FF);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:13px;flex:0 0 auto;}
+.sidebar-brand .name{font-weight:600;color:#fff;font-size:14px;line-height:1.2;}
+.sidebar-brand .sub{font-size:11px;color:var(--text-faint);}
+.nav-group{padding:14px 10px 4px;}
+.nav-group-label{font-size:10.5px;letter-spacing:.05em;color:var(--text-faint);padding:0 10px 6px;font-weight:600;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;cursor:pointer;color:var(--sidebar-text);font-size:13px;margin-bottom:1px;}
+.nav-item .ic{width:18px;text-align:center;flex:0 0 auto;font-size:14px;}
+.nav-item:hover{background:var(--sidebar-hover);color:#fff;}
+.nav-item.active{background:var(--sidebar-hover);color:var(--sidebar-text-active);box-shadow:inset 2px 0 0 var(--accent);}
+.sidebar-footer{margin-top:auto;padding:12px 16px 16px;border-top:1px solid var(--sidebar-border);font-size:11px;color:var(--text-faint);}
+
+.sidebar-scrim{display:none;}
+
+/* ---------- Shell ---------- */
+.shell{flex:1 1 auto;margin-left:236px;min-width:0;display:flex;flex-direction:column;min-height:100%;}
+.topbar{position:sticky;top:0;z-index:30;background:var(--surface);border-bottom:1px solid var(--border);padding:calc(10px + env(safe-area-inset-top,0px)) 20px 10px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.hamburger{display:none;background:none;border:1px solid var(--border);border-radius:6px;width:34px;height:34px;align-items:center;justify-content:center;cursor:pointer;color:var(--text);}
+.selector{display:flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:12.5px;}
+.selector select{background:none;border:none;outline:none;max-width:180px;}
+.search-wrap{position:relative;flex:1 1 260px;max-width:420px;}
+.search-input{width:100%;padding:8px 12px 8px 32px;border:1px solid var(--border);border-radius:6px;background:var(--surface-2);outline:none;}
+.search-input:focus{border-color:var(--accent);}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-faint);font-size:13px;}
+.search-results{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:var(--shadow-modal);max-height:340px;overflow-y:auto;z-index:50;}
+.search-result-item{display:flex;gap:8px;align-items:center;padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--border);}
+.search-result-item:last-child{border-bottom:none;}
+.search-result-item:hover{background:var(--surface-2);}
+.search-result-type{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-faint);width:78px;flex:0 0 auto;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.icon-btn{background:none;border:1px solid var(--border);border-radius:6px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);}
+.icon-btn:hover{color:var(--text);border-color:var(--text-faint);}
+.icon-btn.active{color:var(--accent);border-color:var(--accent);}
+
+.content{padding:20px 24px 60px;max-width:1320px;width:100%;margin:0 auto;}
+.breadcrumb{font-size:12.5px;color:var(--text-muted);margin-bottom:10px;display:flex;gap:6px;flex-wrap:wrap;}
+.breadcrumb a{color:var(--text-muted);}
+.breadcrumb a:hover{color:var(--accent);}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap;}
+.page-title{font-size:21px;font-weight:600;letter-spacing:-.01em;margin:0 0 4px;}
+.page-sub{font-size:12.5px;color:var(--text-muted);}
+.page-actions{display:flex;gap:8px;flex-wrap:wrap;}
+
+.btn{border-radius:6px;padding:8px 14px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text);display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+.btn:hover{border-color:var(--text-faint);}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+.btn-primary:hover{background:var(--accent-hover);border-color:var(--accent-hover);}
+.btn-danger{background:var(--red);border-color:var(--red);color:#fff;}
+.btn-danger:hover{opacity:.9;}
+.btn-ghost{background:none;border-color:transparent;}
+.btn-ghost:hover{background:var(--surface-2);}
+.btn-sm{padding:5px 10px;font-size:12px;}
+.btn[disabled]{opacity:.5;cursor:not-allowed;}
+
+/* ---------- Panels / cards ---------- */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:16px;}
+.panel-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.panel-title{font-size:13.5px;font-weight:600;}
+.panel-body{padding:16px;}
+.panel-body.tight{padding:0;}
+
+.kpi-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface);overflow:hidden;margin-bottom:16px;}
+.kpi-cell{padding:14px 14px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);min-width:0;}
+.kpi-cell:nth-last-child(-n+1){border-right:none;}
+.kpi-label{font-size:10.5px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;}
+.kpi-value{font-size:19px;font-weight:600;font-family:var(--font-mono);letter-spacing:-.01em;}
+.kpi-value.small{font-size:16px;}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+@media (max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr;}}
+
+.chart-card{padding:14px 16px;}
+.chart-title{font-size:12.5px;font-weight:600;margin-bottom:2px;}
+.chart-sub{font-size:11px;color:var(--text-muted);margin-bottom:10px;}
+
+.range-toggle{display:inline-flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;}
+.range-toggle button{border:none;background:var(--surface);padding:5px 10px;font-size:11.5px;cursor:pointer;color:var(--text-muted);border-right:1px solid var(--border);}
+.range-toggle button:last-child{border-right:none;}
+.range-toggle button.active{background:var(--accent-soft);color:var(--accent);font-weight:600;}
+
+/* ---------- Table ---------- */
+.table-toolbar{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.table-toolbar .grow{flex:1 1 auto;}
+.tbl-search{padding:7px 10px 7px 28px;border:1px solid var(--border);border-radius:6px;background:var(--surface-2);width:220px;position:relative;}
+.tbl-search-wrap{position:relative;}
+.tbl-search-wrap .si{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text-faint);font-size:12px;}
+.filter-select{padding:7px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface-2);}
+.table-wrap{overflow-x:auto;}
+table.dt{width:100%;border-collapse:collapse;font-size:13px;}
+table.dt th{text-align:left;padding:9px 14px;border-bottom:1px solid var(--border);color:var(--text-muted);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap;cursor:pointer;user-select:none;}
+table.dt th.nosort{cursor:default;}
+table.dt th .sort-ind{opacity:.5;margin-left:3px;font-size:10px;}
+table.dt td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:middle;}
+table.dt tbody tr:hover{background:var(--surface-2);}
+table.dt tbody tr{cursor:pointer;}
+.cell-id{font-family:var(--font-mono);font-size:12px;color:var(--text-muted);}
+.cell-name{font-weight:500;}
+.cell-muted{color:var(--text-muted);}
+.row-actions{display:flex;gap:4px;justify-content:flex-end;}
+.table-footer{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid var(--border);flex-wrap:wrap;gap:8px;}
+.pg-info{font-size:12px;color:var(--text-muted);}
+.pg-controls{display:flex;align-items:center;gap:6px;}
+.pg-size{padding:5px 6px;border:1px solid var(--border);border-radius:6px;background:var(--surface-2);}
+
+.empty-state{padding:56px 20px;text-align:center;color:var(--text-muted);}
+.empty-state .ic{font-size:30px;margin-bottom:10px;}
+.empty-state .t{font-weight:600;color:var(--text);margin-bottom:4px;}
+.loading-state{padding:56px 0;display:flex;align-items:center;justify-content:center;gap:10px;color:var(--text-muted);}
+.spinner{width:16px;height:16px;border-radius:50%;border:2px solid var(--border);border-top-color:var(--accent);animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.error-state{padding:40px 20px;text-align:center;color:var(--red);}
+
+/* ---------- Badges ---------- */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2.5px 9px;border-radius:var(--radius-pill);font-size:11px;font-weight:600;white-space:nowrap;}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+.badge-green{background:var(--green-soft);color:var(--green);}
+.badge-amber{background:var(--amber-soft);color:var(--amber);}
+.badge-red{background:var(--red-soft);color:var(--red);}
+.badge-slate{background:var(--slate-soft);color:var(--slate);}
+.badge-accent{background:var(--accent-soft);color:var(--accent);}
+
+/* ---------- Tabs ---------- */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:16px;flex-wrap:wrap;}
+.tab{padding:9px 14px;font-size:13px;font-weight:500;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+/* ---------- Detail ---------- */
+.detail-header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:6px;flex-wrap:wrap;}
+.detail-title{font-size:20px;font-weight:600;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.detail-id{font-family:var(--font-mono);font-size:12px;color:var(--text-muted);}
+.kv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px 20px;}
+.kv-item .k{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:3px;}
+.kv-item .v{font-size:13.5px;}
+.kv-item .v.mono{font-family:var(--font-mono);font-size:12.5px;}
+
+/* ---------- Forms ---------- */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px;}
+.form-grid .span2{grid-column:1/-1;}
+@media (max-width:560px){.form-grid{grid-template-columns:1fr;}}
+.form-row label{display:block;font-size:12px;font-weight:600;margin-bottom:5px;color:var(--text-muted);}
+.form-row input[type=text],.form-row input[type=number],.form-row input[type=date],.form-row select,.form-row textarea{
+  width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface-2);outline:none;
+}
+.form-row input:focus,.form-row select:focus,.form-row textarea:focus{border-color:var(--accent);background:var(--surface);}
+.form-row-inline{display:flex;align-items:center;gap:8px;flex-direction:row-reverse;justify-content:flex-end;}
+.form-row-inline label{margin:0;}
+.req{color:var(--red);}
+.field-help{font-size:11px;color:var(--text-faint);margin-top:3px;}
+.field-error{font-size:11px;color:var(--red);margin-top:3px;}
+.checklist{border:1px solid var(--border);border-radius:6px;padding:8px;max-height:150px;overflow-y:auto;background:var(--surface-2);}
+.checklist-item{display:block;font-size:12.5px;padding:3px 0;}
+
+/* ---------- Modal ---------- */
+.modal-scrim{position:fixed;inset:0;background:rgba(8,11,17,.5);display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;z-index:100;overflow-y:auto;}
+.modal{background:var(--surface);border-radius:10px;box-shadow:var(--shadow-modal);width:100%;max-width:640px;border:1px solid var(--border);}
+.modal.narrow{max-width:440px;}
+.modal.wide{max-width:820px;}
+.modal-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-header h3{margin:0;font-size:15px;font-weight:600;}
+.modal-body{padding:18px;max-height:70vh;overflow-y:auto;}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
+.modal-close{background:none;border:none;font-size:18px;cursor:pointer;color:var(--text-muted);line-height:1;}
+
+/* ---------- Toast ---------- */
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:200;display:flex;flex-direction:column;gap:8px;padding-bottom:env(safe-area-inset-bottom,0px);}
+.toast{background:var(--ink);color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;box-shadow:var(--shadow-modal);display:flex;align-items:center;gap:8px;min-width:220px;}
+.toast.error{background:var(--red);}
+.toast.success{background:var(--green);}
+
+/* ---------- Code / JSON ---------- */
+.code-block{background:var(--ink);color:#D9E2F0;padding:12px 14px;border-radius:8px;font-family:var(--font-mono);font-size:12px;overflow-x:auto;white-space:pre;line-height:1.55;}
+.kv-inline{display:flex;gap:8px;font-family:var(--font-mono);font-size:12px;margin-bottom:6px;}
+.method-pill{font-family:var(--font-mono);font-weight:700;padding:2px 8px;border-radius:4px;font-size:11px;}
+.method-GET{background:var(--green-soft);color:var(--green);}
+.method-POST{background:var(--accent-soft);color:var(--accent);}
+.method-PUT{background:var(--amber-soft);color:var(--amber);}
+.method-DELETE{background:var(--red-soft);color:var(--red);}
+
+/* ---------- API explorer / log ---------- */
+.log-item{border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;}
+.log-item-head{display:flex;align-items:center;gap:8px;font-size:12px;margin-bottom:6px;flex-wrap:wrap;}
+.log-endpoint{font-family:var(--font-mono);font-size:12px;color:var(--text-muted);word-break:break-all;}
+.log-time{margin-left:auto;color:var(--text-faint);font-size:11px;}
+
+/* ---------- Misc ---------- */
+.divider{height:1px;background:var(--border);margin:14px 0;}
+.swatch{width:100%;height:64px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:600;font-family:var(--font-mono);}
+.creative-thumb{width:52px;height:38px;border-radius:4px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-family:var(--font-mono);}
+.bar-row{display:grid;grid-template-columns:110px 1fr 62px;align-items:center;gap:8px;margin-bottom:9px;font-size:12px;}
+.bar-track{background:var(--surface-2);border-radius:4px;overflow:hidden;height:16px;position:relative;border:1px solid var(--border);}
+.bar-fill{height:100%;background:var(--accent);}
+.bar-label{color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bar-value{font-family:var(--font-mono);font-size:11.5px;text-align:right;color:var(--text-muted);}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);gap:14px;flex-wrap:wrap;}
+.settings-row:last-child{border-bottom:none;}
+.toggle{position:relative;width:40px;height:22px;background:var(--border);border-radius:999px;cursor:pointer;flex:0 0 auto;}
+.toggle.on{background:var(--accent);}
+.toggle .dot{position:absolute;top:2px;left:2px;width:18px;height:18px;background:#fff;border-radius:50%;transition:left .15s;}
+.toggle.on .dot{left:20px;}
+.expand-row td{background:var(--surface-2);padding:0;}
+.expand-inner{padding:12px 14px 14px 34px;}
+.mini-list-item{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border:1px solid var(--border);border-radius:6px;margin-bottom:6px;background:var(--surface);font-size:12.5px;}
+
+@media (max-width:980px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .shell{margin-left:0;}
+  .hamburger{display:flex;}
+  .sidebar-scrim{display:block;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:39;}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast-root" class="toast-wrap"></div>
+<script>
+'use strict';
+
+/* =========================================================================
+   UTILITIES
+   ========================================================================= */
+function escapeHtml(s){ if(s===null||s===undefined) return ''; return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+function fmtNum(n){ return Math.round(Number(n||0)).toLocaleString('en-US'); }
+function fmtCurrency(n){ return '$' + Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtPct(n){ if(!isFinite(n)) return '0.00%'; return Number(n||0).toFixed(2)+'%'; }
+function fmtDate(d){ if(!d) return '—'; var dt=new Date(d+'T00:00:00'); if(isNaN(dt)) return '—'; return dt.toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}); }
+function fmtDateTime(d){ if(!d) return '—'; var dt=new Date(d); return dt.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ', ' + dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}); }
+function todayISO(offsetDays){ var d=new Date(); d.setDate(d.getDate()+(offsetDays||0)); return d.toISOString().slice(0,10); }
+function addDaysISO(iso,n){ var d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); }
+function randInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+function randFloat(a,b){ return Math.random()*(b-a)+a; }
+function randChoice(arr){ return arr[randInt(0,arr.length-1)]; }
+function sample(arr,n){ var copy=arr.slice(); var out=[]; n=Math.min(n,copy.length); for(var i=0;i<n;i++){ var idx=randInt(0,copy.length-1); out.push(copy.splice(idx,1)[0]); } return out; }
+function uidShort(){ return Math.random().toString(36).slice(2,9); }
+function clamp(n,a,b){ return Math.max(a,Math.min(b,n)); }
+function copyToClipboard(text){
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(text); return true; }
+  }catch(e){}
+  try{
+    var ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); return true;
+  }catch(e){ return false; }
+}
+function titleCase(s){ return s.replace(/([A-Z])/g,' $1').replace(/^./,function(c){return c.toUpperCase();}).trim(); }
+
+/* =========================================================================
+   DATA POOLS
+   ========================================================================= */
+var POOL = {
+  companies: ['Acme Corp','Northwind Traders','Globex Retail','Initech Media','Umbrella Consumer Group','Stark Home Goods','Wayne Outfitters','Hooli Electronics','Soylent Foods','Vandelay Industries','Cyberdyne Apparel','Massive Dynamic Travel'],
+  campaignThemes: ['Brand Awareness','Spring Sale','Always-On Retargeting','Product Launch','Holiday Push','Back to School','Summer Promo','New Customer Acquisition','App Install Drive','Loyalty Rewards','Flash Sale','Category Expansion'],
+  quarters: ['Q1','Q2','Q3','Q4'],
+  sites: [
+    {name:'The Daily Journal', url:'https://dailyjournal.example.com'},
+    {name:'SportsPulse', url:'https://sportspulse.example.com'},
+    {name:'CookingCraft', url:'https://cookingcraft.example.com'},
+    {name:'TechToday', url:'https://techtoday.example.com'},
+    {name:'WeatherNow', url:'https://weathernow.example.com'},
+    {name:'MusicWave', url:'https://musicwave.example.com'},
+    {name:'FinanceForward', url:'https://financeforward.example.com'},
+    {name:'TravelTales', url:'https://traveltales.example.com'}
+  ],
+  creativeTypes: ['DISPLAY','IMAGE','HTML5_BANNER','DISPLAY_IMAGE_GALLERY','INSTREAM_VIDEO','RICH_MEDIA_DISPLAY_BANNER'],
+  sizes: [[300,250],[728,90],[160,600],[320,50],[970,250],[300,600],[336,280],[970,90],[250,250],[300,1050]],
+  browsers: ['Chrome','Safari','Firefox','Edge','Samsung Internet'],
+  countries: ['United States','Canada','United Kingdom','Germany','France','Australia','Japan','Brazil','India','Mexico'],
+  advertiserGroups: ['Retail','CPG','Finance','Travel','Automotive','Entertainment','Technology'],
+  firstNames: ['Jordan','Taylor','Morgan','Casey','Riley','Avery','Sam','Jamie','Drew','Reese','Parker','Quinn'],
+  lastNames: ['Patel','Nguyen','Garcia','Smith','Kim','Johnson','Chen','Brown','Rossi','Muller','Silva','Okafor'],
+  colors: ['#2B5FE2','#1E8E5A','#B7791F','#C4432B','#6B7280','#7C3AED','#0891B2','#DB2777']
+};
+
+var ENDPOINT_TEMPLATES = {
+  advertisers: 'userprofiles/{profileId}/advertisers',
+  campaigns: 'userprofiles/{profileId}/campaigns',
+  sites: 'userprofiles/{profileId}/sites',
+  placements: 'userprofiles/{profileId}/placements',
+  ads: 'userprofiles/{profileId}/ads',
+  creatives: 'userprofiles/{profileId}/creatives',
+  floodlightConfigurations: 'userprofiles/{profileId}/floodlightConfigurations',
+  floodlightActivityGroups: 'userprofiles/{profileId}/floodlightActivityGroups',
+  floodlightActivities: 'userprofiles/{profileId}/floodlightActivities',
+  landingPages: 'userprofiles/{profileId}/advertiserLandingPages',
+  remarketingLists: 'userprofiles/{profileId}/remarketingLists',
+  eventTags: 'userprofiles/{profileId}/eventTags',
+  reports: 'userprofiles/{profileId}/reports',
+  users: 'userprofiles/{profileId}/accountUserProfiles',
+  billingProfiles: 'userprofiles/{profileId}/billingProfiles'
+};
+var SCOPE_FOR = {
+  advertisers:'dfatrafficking', campaigns:'dfatrafficking', sites:'dfatrafficking', placements:'dfatrafficking',
+  ads:'dfatrafficking', creatives:'dfatrafficking', floodlightConfigurations:'dfatrafficking',
+  floodlightActivityGroups:'dfatrafficking', floodlightActivities:'dfatrafficking', landingPages:'dfatrafficking',
+  remarketingLists:'dfatrafficking', eventTags:'dfatrafficking', reports:'dfareporting',
+  users:'dfatrafficking', billingProfiles:'dfatrafficking'
+};
+var KIND_FOR = {
+  advertisers:'dfareporting#advertiser', campaigns:'dfareporting#campaign', sites:'dfareporting#site',
+  placements:'dfareporting#placement', ads:'dfareporting#ad', creatives:'dfareporting#creative',
+  floodlightConfigurations:'dfareporting#floodlightConfiguration', floodlightActivityGroups:'dfareporting#floodlightActivityGroup',
+  floodlightActivities:'dfareporting#floodlightActivity', landingPages:'dfareporting#landingPage',
+  remarketingLists:'dfareporting#remarketingList', eventTags:'dfareporting#eventTag', reports:'dfareporting#report',
+  users:'dfareporting#accountUserProfile', billingProfiles:'dfareporting#billingProfile'
+};
+
+/* =========================================================================
+   ID COUNTERS
+   ========================================================================= */
+var ID_BASE = {
+  advertisers:7000001, campaigns:15300001, sites:500001, placements:90000001, ads:120000001,
+  creatives:45000001, floodlightConfigurations:8000001, floodlightActivityGroups:8100001,
+  floodlightActivities:8200001, landingPages:3000001, remarketingLists:6000001, eventTags:2000001,
+  reports:900001, reportFiles:950001, users:9000001, billingProfiles:700001
+};
+
+function nextId(db, resourceKey){
+  db.counters[resourceKey] = (db.counters[resourceKey] || ID_BASE[resourceKey]) + 1;
+  return String(db.counters[resourceKey]);
+}
+
+/* =========================================================================
+   SEED DATA GENERATION
+   ========================================================================= */
+function buildSeed(){
+  var db = {
+    meta:{ profileId:'2481193057', accountId:'10231', accountName:'Practice Sandbox — Campaign Manager 360', currency:'USD', timezone:'America/New_York', createdAt:new Date().toISOString() },
+    counters:{},
+    advertisers:[], campaigns:[], sites:[], placements:[], ads:[], creatives:[],
+    floodlightConfigurations:[], floodlightActivityGroups:[], floodlightActivities:[],
+    landingPages:[], remarketingLists:[], eventTags:[], reports:[], reportFiles:[],
+    users:[], userRoles:[], billingProfiles:[], performance:[]
+  };
+
+  // ---- Sites (shared across account) ----
+  POOL.sites.forEach(function(s){
+    db.sites.push({ id: nextId(db,'sites'), name:s.name, url:s.url, approved:true, keyName:s.name.toLowerCase().replace(/[^a-z0-9]+/g,'_'), createdAt: new Date(Date.now()-randInt(60,400)*86400000).toISOString() });
+  });
+
+  // ---- User roles (static reference) ----
+  db.userRoles = [
+    {id:'1', name:'Administrator', description:'Full access to all account features and settings.'},
+    {id:'2', name:'Standard Trafficker', description:'Can create and edit campaigns, placements, ads and creatives.'},
+    {id:'3', name:'Read-only Analyst', description:'View-only access to reporting and trafficking data.'},
+    {id:'4', name:'Billing Manager', description:'Access to billing profiles and invoices only.'}
+  ];
+
+  // ---- Advertisers ----
+  var advCount = 6;
+  var companies = sample(POOL.companies, advCount);
+  companies.forEach(function(name){
+    var adv = {
+      id: nextId(db,'advertisers'), name: name, status: Math.random()<0.9 ? 'APPROVED':'ON_HOLD',
+      advertiserGroup: randChoice(POOL.advertiserGroups),
+      defaultEmail: 'trafficking+' + name.toLowerCase().replace(/[^a-z0-9]+/g,'') + '@agency.example.com',
+      clickThroughUrlSuffix: Math.random()<0.4 ? 'utm_source=cm360&utm_medium=display' : '',
+      floodlightConfigurationId: null,
+      createdAt: new Date(Date.now()-randInt(120,700)*86400000).toISOString(),
+      lastModified: new Date(Date.now()-randInt(0,30)*86400000).toISOString()
+    };
+    db.advertisers.push(adv);
+  });
+
+  // ---- Per-advertiser: floodlight config, landing pages, remarketing lists, event tags, creatives, campaigns->placements->ads ----
+  db.advertisers.forEach(function(adv){
+    // Floodlight configuration
+    var fc = { id: nextId(db,'floodlightConfigurations'), advertiserId: adv.id, tagFormat:'HTML', tagSettings:{imageTagEnabled:true,dynamicTagEnabled:true}, createdAt:adv.createdAt };
+    db.floodlightConfigurations.push(fc);
+    adv.floodlightConfigurationId = fc.id;
+
+    var groupTypes = ['SALE','COUNTER'];
+    groupTypes.forEach(function(gt, gi){
+      var group = { id: nextId(db,'floodlightActivityGroups'), floodlightConfigurationId: fc.id, advertiserId: adv.id,
+        name: (gt==='SALE' ? 'Conversions' : 'Site Engagement'), type: gt,
+        tagString: (gt==='SALE'?'conv':'eng') + randInt(100,999) };
+      db.floodlightActivityGroups.push(group);
+      var actCount = randInt(2,3);
+      var actNames = gt==='SALE' ? ['Purchase','Checkout Complete','Signup Complete'] : ['Homepage Visit','Product View','Add to Cart'];
+      for(var i=0;i<actCount;i++){
+        db.floodlightActivities.push({
+          id: nextId(db,'floodlightActivities'), floodlightActivityGroupId: group.id, floodlightConfigurationId: fc.id, advertiserId: adv.id,
+          name: actNames[i % actNames.length], tagString: (actNames[i%actNames.length].toLowerCase().replace(/[^a-z]+/g,'')).slice(0,6)+randInt(10,99),
+          countingMethod: randChoice(['STANDARD_COUNTING','UNIQUE_COUNTING','SESSION_COUNTING']),
+          floodlightTagType: randChoice(['GLOBAL_SITE_TAG','IFRAME','IMAGE']),
+          status: Math.random()<0.9 ? 'ACTIVE':'ARCHIVED_AND_DISABLED'
+        });
+      }
+    });
+
+    // Landing pages
+    var lpCount = randInt(2,3);
+    for(var l=0;l<lpCount;l++){
+      db.landingPages.push({ id: nextId(db,'landingPages'), advertiserId: adv.id,
+        name: adv.name + ' — Landing Page ' + (l+1),
+        url: 'https://www.' + adv.name.toLowerCase().replace(/[^a-z0-9]+/g,'') + '.example.com/lp' + (l+1),
+        archived:false });
+    }
+
+    // Remarketing lists
+    var rlCount = randInt(2,3);
+    var rlNames = ['Cart Abandoners','All Site Visitors 30d','Past Purchasers','Newsletter Signups','High Intent Browsers'];
+    sample(rlNames, rlCount).forEach(function(n){
+      db.remarketingLists.push({ id: nextId(db,'remarketingLists'), advertiserId: adv.id, name: n,
+        description: 'Users who match the "' + n + '" behavior in the last window.',
+        lifeSpan: randChoice([30,60,90,180]), active:true, listSize: randInt(4000,850000) });
+    });
+
+    // Event tags
+    var etCount = randInt(1,2);
+    for(var e=0;e<etCount;e++){
+      db.eventTags.push({ id: nextId(db,'eventTags'), advertiserId: adv.id,
+        name: adv.name + ' Verification Tag ' + (e+1),
+        url: 'https://verify.measurement-partner.example.com/px?adv=' + adv.id,
+        type: randChoice(['IMPRESSION_IMAGE_EVENT_TAG','IMPRESSION_JAVASCRIPT_EVENT_TAG','CLICK_THROUGH_EVENT_TAG']),
+        status:'ENABLED' });
+    }
+
+    // Creatives
+    var crCount = randInt(4,6);
+    for(var c=0;c<crCount;c++){
+      var sz = randChoice(POOL.sizes);
+      db.creatives.push({ id: nextId(db,'creatives'), advertiserId: adv.id,
+        name: adv.name + ' — ' + randChoice(['Banner','Hero','Promo','Retarget']) + ' ' + (c+1),
+        type: randChoice(POOL.creativeTypes), width: sz[0], height: sz[1],
+        clickThroughUrl: 'https://www.' + adv.name.toLowerCase().replace(/[^a-z0-9]+/g,'') + '.example.com/offer',
+        active: Math.random()<0.85, color: randChoice(POOL.colors),
+        createdAt: new Date(Date.now()-randInt(10,300)*86400000).toISOString() });
+    }
+    var advCreatives = db.creatives.filter(function(x){return x.advertiserId===adv.id;});
+
+    // Campaigns
+    var campCount = randInt(2,3);
+    for(var k=0;k<campCount;k++){
+      var start = todayISO(-randInt(10,60));
+      var end = todayISO(randInt(10,90));
+      var campaign = { id: nextId(db,'campaigns'), advertiserId: adv.id,
+        name: randChoice(POOL.quarters) + ' ' + randChoice(POOL.campaignThemes),
+        startDate:start, endDate:end, archived: Math.random()<0.12,
+        comment:'', defaultLandingPageId: (db.landingPages.filter(function(x){return x.advertiserId===adv.id;})[0]||{}).id || null,
+        createdAt: new Date(Date.now()-randInt(15,200)*86400000).toISOString() };
+      db.campaigns.push(campaign);
+
+      // Placements
+      var siteChoices = sample(db.sites, randInt(2,4));
+      var placementsForCampaign = [];
+      siteChoices.forEach(function(site){
+        var sz = randChoice(POOL.sizes);
+        var pricing = randChoice(['PRICING_TYPE_CPM','PRICING_TYPE_CPC','PRICING_TYPE_CPM_ACTIVEVIEW','PRICING_TYPE_FLAT_RATE_IMPRESSIONS']);
+        var placement = { id: nextId(db,'placements'), campaignId: campaign.id, siteId: site.id,
+          name: site.name + ' — ' + sz[0] + 'x' + sz[1],
+          compatibility: randChoice(['DISPLAY','DISPLAY_INTERSTITIAL','IN_STREAM_VIDEO']),
+          width: sz[0], height: sz[1], pricingType: pricing,
+          rate: pricing.indexOf('CPM')>-1 ? randFloat(4,22) : randFloat(0.3,2.4),
+          startDate: campaign.startDate, endDate: campaign.endDate,
+          activeStatus: campaign.archived ? 'PLACEMENT_STATUS_ARCHIVED' : randChoice(['PLACEMENT_STATUS_ACTIVE','PLACEMENT_STATUS_ACTIVE','PLACEMENT_STATUS_ACTIVE','PLACEMENT_STATUS_INACTIVE']),
+          geoCountries: sample(POOL.countries, randInt(1,3)).join(', '),
+          techBrowsers: sample(POOL.browsers, randInt(2,4)).join(', ') };
+        db.placements.push(placement);
+        placementsForCampaign.push(placement);
+      });
+
+      // Ads
+      placementsForCampaign.forEach(function(pl){
+        var adCount = randInt(1,2);
+        for(var a=0;a<adCount;a++){
+          var creative = randChoice(advCreatives);
+          db.ads.push({ id: nextId(db,'ads'), campaignId: campaign.id,
+            name: campaign.name + ' — Ad ' + (a+1) + ' (' + pl.name + ')',
+            placementIds:[pl.id], creativeId: creative ? creative.id : null,
+            type: randChoice(['AD_SERVING_STANDARD_AD','AD_SERVING_STANDARD_AD','AD_SERVING_TRACKING']),
+            active: Math.random()<0.88, startDate: campaign.startDate, endDate: campaign.endDate });
+        }
+      });
+    }
+  });
+
+  // ---- Performance (per placement, 45 days) ----
+  var days = 45;
+  db.placements.forEach(function(pl){
+    var baseImp = randInt(1200,9000);
+    for(var d=days;d>=0;d--){
+      var date = todayISO(-d);
+      var wobble = 0.6 + Math.random()*0.8;
+      var weekend = (new Date(date+'T00:00:00').getDay()%6===0) ? 0.7 : 1;
+      var impressions = Math.round(baseImp*wobble*weekend);
+      var ctr = randFloat(0.15,1.4)/100;
+      var clicks = Math.round(impressions*ctr);
+      var convRate = randFloat(1.5,7)/100;
+      var conversions = Math.round(clicks*convRate);
+      var cpmRate = pl.pricingType.indexOf('CPM')>-1 ? pl.rate : pl.rate*8;
+      var spend = (impressions/1000)*cpmRate;
+      db.performance.push({ placementId: pl.id, date: date, impressions: impressions, clicks: clicks, conversions: conversions, spend: Math.round(spend*100)/100 });
+    }
+  });
+
+  // ---- Reports ----
+  var reportNames = ['Weekly Campaign Performance','Placement Delivery Summary','Advertiser Spend Overview','Floodlight Conversion Report','Creative Performance Breakdown','Site Delivery Audit'];
+  reportNames.forEach(function(n,i){
+    var report = { id: nextId(db,'reports'), name:n, type: randChoice(['STANDARD','STANDARD','FLOODLIGHT','REACH']),
+      dateRangeType: randChoice(['LAST_7_DAYS','LAST_30_DAYS','MONTH_TO_DATE']),
+      lastModified: new Date(Date.now()-randInt(0,20)*86400000).toISOString(),
+      ownerEmail:'trafficker@agency.example.com' };
+    db.reports.push(report);
+    if(i<4){
+      var fileCount = randInt(1,2);
+      for(var f=0;f<fileCount;f++){
+        db.reportFiles.push({ id: nextId(db,'reportFiles'), reportId: report.id, status:'REPORT_AVAILABLE',
+          format:'CSV', fileName: n.toLowerCase().replace(/[^a-z0-9]+/g,'_') + '_' + (f+1) + '.csv',
+          lastModifiedTime: new Date(Date.now()-randInt(0,15)*86400000).toISOString(),
+          dateRange:{ startDate: todayISO(-30), endDate: todayISO(0) } });
+      }
+    }
+  });
+
+  // ---- Users ----
+  var userCount = 8;
+  for(var u=0;u<userCount;u++){
+    var fn = randChoice(POOL.firstNames), ln = randChoice(POOL.lastNames);
+    db.users.push({ id: nextId(db,'users'), name: fn+' '+ln,
+      email:(fn+'.'+ln).toLowerCase()+'@agency.example.com',
+      role: randChoice(db.userRoles).id, active: Math.random()<0.9,
+      lastLogin: new Date(Date.now()-randInt(0,20)*86400000).toISOString() });
+  }
+
+  // ---- Billing profiles (read-only) ----
+  var bpNames = ['Consolidated — Net 30','Advertiser-Level Invoicing','Campaign-Level Invoicing'];
+  bpNames.forEach(function(n,i){
+    db.billingProfiles.push({ id: nextId(db,'billingProfiles'), name:n,
+      invoiceLevel: i===0?'ACCOUNT_LEVEL':(i===1?'ADVERTISER_LEVEL':'CAMPAIGN_LEVEL'),
+      currencyCode:'USD', status:'ACTIVE', isDefault: i===0,
+      purchaseOrder:'PO-'+randInt(10000,99999) });
+  });
+
+  return db;
+}
+
+/* =========================================================================
+   PERSISTENCE
+   ========================================================================= */
+var STORAGE_KEY = 'cm360_sim_db_v1';
+var DB = null;
+function loadDB(){
+  try{
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){ DB = JSON.parse(raw); return; }
+  }catch(e){}
+  DB = buildSeed();
+  saveDB();
+}
+function saveDB(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); }catch(e){}
+}
+function resetDB(){
+  try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+  DB = buildSeed();
+  saveDB();
+}
+
+/* =========================================================================
+   LOOKUP HELPERS
+   ========================================================================= */
+function byId(arr,id){ for(var i=0;i<arr.length;i++){ if(String(arr[i].id)===String(id)) return arr[i]; } return null; }
+function findAll(arr, fn){ return arr.filter(fn); }
+function advertiserName(id){ var a=byId(DB.advertisers,id); return a?a.name:'—'; }
+function campaignName(id){ var c=byId(DB.campaigns,id); return c?c.name:'—'; }
+function siteName(id){ var s=byId(DB.sites,id); return s?s.name:'—'; }
+function creativeName(id){ var c=byId(DB.creatives,id); return c?c.name:'—'; }
+function placementName(id){ var p=byId(DB.placements,id); return p?p.name:'—'; }
+function campaignsForAdvertiser(advId){ return DB.campaigns.filter(function(c){return c.advertiserId===advId;}); }
+function placementsForCampaign(campId){ return DB.placements.filter(function(p){return p.campaignId===campId;}); }
+function adsForCampaign(campId){ return DB.ads.filter(function(a){return a.campaignId===campId;}); }
+function adsForPlacement(plId){ return DB.ads.filter(function(a){return a.placementIds && a.placementIds.indexOf(plId)>-1;}); }
+function creativesForAdvertiser(advId){ return DB.creatives.filter(function(c){return c.advertiserId===advId;}); }
+function landingPagesForAdvertiser(advId){ return DB.landingPages.filter(function(l){return l.advertiserId===advId;}); }
+
+function computeCampaignStatus(c){
+  if(c.archived) return 'ARCHIVED';
+  var t = todayISO(0);
+  if(t < c.startDate) return 'SCHEDULED';
+  if(t > c.endDate) return 'ENDED';
+  return 'ACTIVE';
+}
+function statusBadgeKind(status){
+  var map = {
+    ACTIVE:'green', APPROVED:'green', ENABLED:'green', REPORT_AVAILABLE:'green',
+    SCHEDULED:'accent', PROCESSING:'accent', QUEUED:'accent',
+    ON_HOLD:'amber', INACTIVE:'amber', PENDING:'amber',
+    ENDED:'slate', ARCHIVED:'slate', ARCHIVED_AND_DISABLED:'slate', DISABLED:'slate',
+    FAILED:'red', CANCELLED:'red'
+  };
+  var cleaned = String(status||'').replace('PLACEMENT_STATUS_','').replace('AD_SERVING_','');
+  return map[cleaned] || 'slate';
+}
+
+/* =========================================================================
+   PERFORMANCE AGGREGATION
+   ========================================================================= */
+function perfInRange(days){
+  var since = todayISO(-(days-1));
+  return DB.performance.filter(function(r){ return r.date >= since; });
+}
+function sumPerf(rows){
+  var out = {impressions:0, clicks:0, conversions:0, spend:0};
+  rows.forEach(function(r){ out.impressions+=r.impressions; out.clicks+=r.clicks; out.conversions+=r.conversions; out.spend+=r.spend; });
+  return out;
+}
+function perfForCampaign(campId, days){
+  var plIds = placementsForCampaign(campId).map(function(p){return p.id;});
+  var rows = perfInRange(days).filter(function(r){ return plIds.indexOf(r.placementId)>-1; });
+  return sumPerf(rows);
+}
+function perfForSite(siteId, days){
+  var plIds = DB.placements.filter(function(p){return p.siteId===siteId;}).map(function(p){return p.id;});
+  var rows = perfInRange(days).filter(function(r){ return plIds.indexOf(r.placementId)>-1; });
+  return sumPerf(rows);
+}
+function perfForPlacement(plId, days){
+  var rows = perfInRange(days).filter(function(r){ return r.placementId===plId; });
+  return sumPerf(rows);
+}
+function perfForCreative(creativeId, days){
+  var plSet = {};
+  DB.ads.filter(function(a){return a.creativeId===creativeId;}).forEach(function(a){
+    (a.placementIds||[]).forEach(function(id){ plSet[id]=true; });
+  });
+  var plIds = Object.keys(plSet);
+  var rows = perfInRange(days).filter(function(r){ return plIds.indexOf(r.placementId)>-1; });
+  return sumPerf(rows);
+}
+function perfByDate(days){
+  var rows = perfInRange(days);
+  var map = {};
+  rows.forEach(function(r){ if(!map[r.date]) map[r.date]={date:r.date,impressions:0,clicks:0,conversions:0,spend:0}; var m=map[r.date]; m.impressions+=r.impressions; m.clicks+=r.clicks; m.conversions+=r.conversions; m.spend+=r.spend; });
+  return Object.keys(map).sort().map(function(k){return map[k];});
+}
+function topCampaignsBySpend(days,n){
+  return DB.campaigns.map(function(c){ var p=perfForCampaign(c.id,days); return {label:c.name, value:p.spend, sub:advertiserName(c.advertiserId)}; })
+    .sort(function(a,b){return b.value-a.value;}).slice(0,n);
+}
+function topSitesByImpressions(days,n){
+  return DB.sites.map(function(s){ var p=perfForSite(s.id,days); return {label:s.name, value:p.impressions}; })
+    .sort(function(a,b){return b.value-a.value;}).slice(0,n);
+}
+function topCreativesByImpressions(days,n){
+  return DB.creatives.map(function(c){ var p=perfForCreative(c.id,days); return {label:c.name, value:p.impressions}; })
+    .filter(function(x){return x.value>0;}).sort(function(a,b){return b.value-a.value;}).slice(0,n);
+}
+
+/* =========================================================================
+   MOCK API LAYER
+   ========================================================================= */
+var API_LOG = [];
+function httpMethodFor(op){ return {list:'GET', get:'GET', insert:'POST', update:'PUT', delete:'DELETE'}[op] || 'GET'; }
+function buildEndpoint(resourceKey, op, id){
+  var base = ENDPOINT_TEMPLATES[resourceKey].replace('{profileId}', DB.meta.profileId);
+  if((op==='get' || op==='delete') && id) return base + '/' + id;
+  return base;
+}
+function sampleBodyFor(resourceKey){
+  var def = RESOURCES[resourceKey];
+  var body = {};
+  def.fields.forEach(function(f){
+    if(f.type==='checkbox'){ body[f.key]=true; }
+    else if(f.type==='number'){ body[f.key]=0; }
+    else if(f.type==='select'){ var opts=(typeof f.options==='function'?f.options():f.options)||[]; body[f.key]= opts.length? opts[0].value : ''; }
+    else if(f.type==='checklist'){ body[f.key]=[]; }
+    else { body[f.key] = f.placeholder || ('Sample ' + f.label); }
+  });
+  return body;
+}
+function logApiCall(entry){
+  API_LOG.unshift(entry);
+  if(API_LOG.length>60) API_LOG.length = 60;
+}
+function apiError(status,message){ var e=new Error(message); e.status=status; return e; }
+
+function validateEntity(resourceKey, body, mode){
+  var def = RESOURCES[resourceKey];
+  var errors = [];
+  def.fields.forEach(function(f){
+    if(f.required){
+      var v = body[f.key];
+      if(v===undefined || v===null || v==='' ) errors.push(f.label + ' is required.');
+    }
+  });
+  if(resourceKey==='campaigns'){
+    if(body.startDate && body.endDate && body.endDate < body.startDate) errors.push('End date must be on or after the start date.');
+  }
+  if(resourceKey==='placements'){
+    if(body.width!==undefined && Number(body.width)<=0) errors.push('Width must be greater than zero.');
+    if(body.height!==undefined && Number(body.height)<=0) errors.push('Height must be greater than zero.');
+  }
+  if(resourceKey==='creatives'){
+    if(body.width!==undefined && Number(body.width)<=0) errors.push('Width must be greater than zero.');
+    if(body.height!==undefined && Number(body.height)<=0) errors.push('Height must be greater than zero.');
+  }
+  if(resourceKey==='remarketingLists'){
+    if(body.lifeSpan!==undefined && (Number(body.lifeSpan)<1 || Number(body.lifeSpan)>540)) errors.push('Membership duration must be between 1 and 540 days.');
+  }
+  return errors;
+}
+
+function cascadeDeleteInfo(resourceKey, id){
+  var children = [];
+  if(resourceKey==='advertisers'){
+    children = children.concat(campaignsForAdvertiser(id).map(function(x){return {key:'campaigns',id:x.id};}));
+    children = children.concat(creativesForAdvertiser(id).map(function(x){return {key:'creatives',id:x.id};}));
+    children = children.concat(landingPagesForAdvertiser(id).map(function(x){return {key:'landingPages',id:x.id};}));
+    children = children.concat(DB.remarketingLists.filter(function(x){return x.advertiserId===id;}).map(function(x){return {key:'remarketingLists',id:x.id};}));
+    children = children.concat(DB.eventTags.filter(function(x){return x.advertiserId===id;}).map(function(x){return {key:'eventTags',id:x.id};}));
+    children = children.concat(DB.floodlightConfigurations.filter(function(x){return x.advertiserId===id;}).map(function(x){return {key:'floodlightConfigurations',id:x.id};}));
+  }
+  if(resourceKey==='campaigns'){
+    children = children.concat(placementsForCampaign(id).map(function(x){return {key:'placements',id:x.id};}));
+    children = children.concat(adsForCampaign(id).map(function(x){return {key:'ads',id:x.id};}));
+  }
+  if(resourceKey==='placements'){
+    children = children.concat(adsForPlacement(id).map(function(x){return {key:'ads',id:x.id};}));
+  }
+  if(resourceKey==='floodlightConfigurations'){
+    var groups = DB.floodlightActivityGroups.filter(function(g){return g.floodlightConfigurationId===id;});
+    groups.forEach(function(g){
+      children.push({key:'floodlightActivityGroups', id:g.id});
+      DB.floodlightActivities.filter(function(a){return a.floodlightActivityGroupId===g.id;}).forEach(function(a){ children.push({key:'floodlightActivities', id:a.id}); });
+    });
+  }
+  if(resourceKey==='floodlightActivityGroups'){
+    children = children.concat(DB.floodlightActivities.filter(function(a){return a.floodlightActivityGroupId===id;}).map(function(x){return {key:'floodlightActivities',id:x.id};}));
+  }
+  return children;
+}
+function removeById(arr,id){ var idx=-1; for(var i=0;i<arr.length;i++){ if(String(arr[i].id)===String(id)){ idx=i; break; } } if(idx>-1) arr.splice(idx,1); }
+
+function performOperation(op, resourceKey, opts){
+  opts = opts || {};
+  var coll = DB[resourceKey];
+  if(op==='list'){
+    var items = coll.slice();
+    if(opts.query && opts.query.advertiserId){ items = items.filter(function(x){return x.advertiserId===opts.query.advertiserId;}); }
+    return { kind: 'dfareporting#' + resourceKey + 'ListResponse', items: items.slice(0,50) };
+  }
+  if(op==='get'){
+    var item = byId(coll, opts.id);
+    if(!item) throw apiError(404, titleCase(resourceKey) + ' ' + opts.id + ' was not found.');
+    return item;
+  }
+  if(op==='insert'){
+    var errs = validateEntity(resourceKey, opts.body, 'create');
+    if(errs.length) throw apiError(400, errs[0]);
+    var newItem = Object.assign({}, opts.body, { id: nextId(DB, resourceKey), createdAt: new Date().toISOString(), lastModified: new Date().toISOString() });
+    coll.push(newItem);
+    return newItem;
+  }
+  if(op==='update'){
+    var existing = byId(coll, opts.id);
+    if(!existing) throw apiError(404, titleCase(resourceKey) + ' ' + opts.id + ' was not found.');
+    var errs2 = validateEntity(resourceKey, opts.body, 'edit');
+    if(errs2.length) throw apiError(400, errs2[0]);
+    Object.assign(existing, opts.body, { lastModified: new Date().toISOString() });
+    return existing;
+  }
+  if(op==='delete'){
+    var target = byId(coll, opts.id);
+    if(!target) throw apiError(404, titleCase(resourceKey) + ' ' + opts.id + ' was not found.');
+    var kids = cascadeDeleteInfo(resourceKey, opts.id);
+    kids.forEach(function(k){ removeById(DB[k.key], k.id); });
+    removeById(coll, opts.id);
+    return { id: opts.id, deleted:true, cascaded: kids.length };
+  }
+  throw apiError(400, 'Unsupported operation: ' + op);
+}
+
+function apiCall(op, resourceKey, opts){
+  opts = opts || {};
+  var endpoint = buildEndpoint(resourceKey, op, opts.id);
+  var method = httpMethodFor(op);
+  var request = { method: method, endpoint: '/' + endpoint, scope:'https://www.googleapis.com/auth/' + (SCOPE_FOR[resourceKey]||'dfatrafficking'),
+    pathParameters: { profileId: DB.meta.profileId }, queryParameters: opts.query || {}, requestBody: (op==='insert'||op==='update') ? opts.body : undefined };
+  if(op==='get' || op==='delete') request.pathParameters.id = opts.id;
+  var status = 200, data;
+  try{
+    data = performOperation(op, resourceKey, opts);
+    if(op==='insert') status = 200;
+  }catch(e){
+    status = e.status || 500;
+    data = { error: { code: status, message: e.message, status: status===404?'NOT_FOUND':(status===400?'INVALID_ARGUMENT':'INTERNAL') } };
+  }
+  var entry = { logId: uidShort(), time: new Date().toISOString(), op: op, resourceKey: resourceKey, request: request, response: data, status: status };
+  logApiCall(entry);
+  return { ok: status<400, data: data, entry: entry };
+}
+
+/* =========================================================================
+   RESOURCE FIELD SCHEMAS (drive generic forms)
+   ========================================================================= */
+function advertiserOptions(){ return DB.advertisers.map(function(a){return {value:a.id,label:a.name};}); }
+function campaignOptions(){ return DB.campaigns.map(function(c){return {value:c.id,label:c.name + ' ('+advertiserName(c.advertiserId)+')'};}); }
+function siteOptions(){ return DB.sites.map(function(s){return {value:s.id,label:s.name};}); }
+function landingPageOptionsAll(){ return DB.landingPages.map(function(l){return {value:l.id,label:l.name};}); }
+function roleOptions(){ return DB.userRoles.map(function(r){return {value:r.id,label:r.name};}); }
+
+var RESOURCES = {
+  advertisers: {
+    label:'Advertisers', singular:'Advertiser', icon:'🏢', major:true, searchKeys:['name'],
+    fields:[
+      {key:'name', label:'Advertiser name', type:'text', required:true, placeholder:'e.g. Acme Corp'},
+      {key:'advertiserGroup', label:'Advertiser group', type:'select', options:function(){return POOL.advertiserGroups.map(function(g){return {value:g,label:g};});}},
+      {key:'status', label:'Status', type:'select', required:true, default:'APPROVED', options:function(){return [{value:'APPROVED',label:'Approved'},{value:'ON_HOLD',label:'On hold'}];}},
+      {key:'defaultEmail', label:'Default tag contact email', type:'text', placeholder:'trafficker@agency.com'},
+      {key:'clickThroughUrlSuffix', label:'Click-through URL suffix', type:'text', placeholder:'utm_source=cm360'}
+    ]
+  },
+  campaigns: {
+    label:'Campaigns', singular:'Campaign', icon:'📣', major:true, searchKeys:['name'],
+    fields:[
+      {key:'name', label:'Campaign name', type:'text', required:true},
+      {key:'advertiserId', label:'Advertiser', type:'select', required:true, options:advertiserOptions},
+      {key:'startDate', label:'Start date', type:'date', required:true, default:todayISO(0)},
+      {key:'endDate', label:'End date', type:'date', required:true, default:todayISO(30)},
+      {key:'defaultLandingPageId', label:'Default landing page', type:'select', options:landingPageOptionsAll},
+      {key:'archived', label:'Archived', type:'checkbox'},
+      {key:'comment', label:'Comments', type:'textarea'}
+    ]
+  },
+  sites: {
+    label:'Sites', singular:'Site', icon:'🌐', major:true, searchKeys:['name','url'],
+    fields:[
+      {key:'name', label:'Site name', type:'text', required:true},
+      {key:'url', label:'Site URL', type:'text', required:true, placeholder:'https://example.com'},
+      {key:'approved', label:'Approved', type:'checkbox', default:true}
+    ]
+  },
+  placements: {
+    label:'Placements', singular:'Placement', icon:'🧩', major:true, searchKeys:['name'],
+    fields:[
+      {key:'name', label:'Placement name', type:'text', required:true},
+      {key:'campaignId', label:'Campaign', type:'select', required:true, options:campaignOptions},
+      {key:'siteId', label:'Site', type:'select', required:true, options:siteOptions},
+      {key:'compatibility', label:'Compatibility', type:'select', required:true, options:function(){return ['DISPLAY','DISPLAY_INTERSTITIAL','IN_STREAM_VIDEO','IN_STREAM_AUDIO','APP','APP_INTERSTITIAL'].map(function(v){return {value:v,label:v};});}},
+      {key:'width', label:'Width (px)', type:'number', required:true, default:300},
+      {key:'height', label:'Height (px)', type:'number', required:true, default:250},
+      {key:'pricingType', label:'Pricing type', type:'select', required:true, options:function(){return [
+        {value:'PRICING_TYPE_CPM',label:'CPM'},{value:'PRICING_TYPE_CPC',label:'CPC'},{value:'PRICING_TYPE_CPA',label:'CPA'},
+        {value:'PRICING_TYPE_FLAT_RATE_IMPRESSIONS',label:'Flat rate — impressions'},{value:'PRICING_TYPE_FLAT_RATE_CLICKS',label:'Flat rate — clicks'},
+        {value:'PRICING_TYPE_CPM_ACTIVEVIEW',label:'vCPM (Active View)'}];}},
+      {key:'rate', label:'Rate / cost', type:'number', required:true, default:10},
+      {key:'startDate', label:'Start date', type:'date', required:true, default:todayISO(0)},
+      {key:'endDate', label:'End date', type:'date', required:true, default:todayISO(30)},
+      {key:'activeStatus', label:'Status', type:'select', required:true, default:'PLACEMENT_STATUS_ACTIVE', options:function(){return [
+        {value:'PLACEMENT_STATUS_ACTIVE',label:'Active'},{value:'PLACEMENT_STATUS_INACTIVE',label:'Inactive'},
+        {value:'PLACEMENT_STATUS_ARCHIVED',label:'Archived'},{value:'PLACEMENT_STATUS_PERMANENTLY_ARCHIVED',label:'Permanently archived'}];}},
+      {key:'geoCountries', label:'Geo targeting — countries', type:'text', placeholder:'United States, Canada', help:'Comma-separated list (simulated targeting).'},
+      {key:'techBrowsers', label:'Technology targeting — browsers', type:'text', placeholder:'Chrome, Safari', help:'Comma-separated list (simulated targeting).'}
+    ]
+  },
+  ads: {
+    label:'Ads', singular:'Ad', icon:'🎯', major:true, searchKeys:['name'],
+    fields:[
+      {key:'name', label:'Ad name', type:'text', required:true},
+      {key:'campaignId', label:'Campaign', type:'select', required:true, options:campaignOptions},
+      {key:'placementIds', label:'Placements', type:'checklist', required:true, options:function(item){
+          var campId = item && item.campaignId; var pls = campId ? placementsForCampaign(campId) : DB.placements;
+          return pls.map(function(p){return {value:p.id,label:p.name};});
+        }},
+      {key:'creativeId', label:'Creative', type:'select', options:function(item){
+          var campId = item && item.campaignId; var camp = campId?byId(DB.campaigns,campId):null;
+          var cr = camp ? creativesForAdvertiser(camp.advertiserId) : DB.creatives;
+          return cr.map(function(c){return {value:c.id,label:c.name};});
+        }},
+      {key:'type', label:'Ad type', type:'select', required:true, default:'AD_SERVING_STANDARD_AD', options:function(){return [
+        {value:'AD_SERVING_STANDARD_AD',label:'Standard'},{value:'AD_SERVING_CLICK_TRACKER',label:'Click tracker'},
+        {value:'AD_SERVING_TRACKING',label:'Tracking'},{value:'AD_SERVING_DEFAULT_AD',label:'Default'}];}},
+      {key:'active', label:'Active', type:'checkbox', default:true},
+      {key:'startDate', label:'Start date', type:'date', default:todayISO(0)},
+      {key:'endDate', label:'End date', type:'date', default:todayISO(30)}
+    ]
+  },
+  creatives: {
+    label:'Creatives', singular:'Creative', icon:'🎨', major:true, searchKeys:['name'],
+    fields:[
+      {key:'name', label:'Creative name', type:'text', required:true},
+      {key:'advertiserId', label:'Advertiser', type:'select', required:true, options:advertiserOptions},
+      {key:'type', label:'Creative type', type:'select', required:true, default:'DISPLAY', options:function(){return POOL.creativeTypes.map(function(t){return {value:t,label:t};});}},
+      {key:'width', label:'Width (px)', type:'number', required:true, default:300},
+      {key:'height', label:'Height (px)', type:'number', required:true, default:250},
+      {key:'clickThroughUrl', label:'Click-through URL', type:'text', placeholder:'https://example.com/offer'},
+      {key:'active', label:'Active', type:'checkbox', default:true}
+    ]
+  },
+  floodlightConfigurations: {
+    label:'Floodlight', singular:'Floodlight Configuration', icon:'💡', major:true, searchKeys:[],
+    fields:[
+      {key:'advertiserId', label:'Advertiser', type:'select', required:true, options:advertiserOptions},
+      {key:'tagFormat', label:'Tag format', type:'select', default:'HTML', options:function(){return [{value:'HTML',label:'HTML'},{value:'XHTML',label:'XHTML'}];}}
+    ]
+  },
+  floodlightActivityGroups: {
+    label:'Floodlight Activity Groups', singular:'Activity Group', icon:'📁', searchKeys:['name'],
+    fields:[
+      {key:'name', label:'Group name', type:'text', required:true},
+      {key:'type', label:'Group type', type:'select', required:true, default:'SALE', options:function(){return [{value:'SALE',label:'Sale'},{value:'COUNTER',label:'Counter'}];}},
+      {key:'tagString', label:'Tag string', type:'text', help:'Short code used as cat= in the floodlight tag.'}
+    ]
+  },
+  floodlightActivities: {
+    label:'Floodlight Activities', singular:'Activity', icon:'🔥', searchKeys:['name'],
+    fields:[
+      {key:'name', label:'Activity name', type:'text', required:true},
+      {key:'tagString', label:'Tag string', type:'text', required:true},
+      {key:'countingMethod', label:'Counting method', type:'select', required:true, default:'STANDARD_COUNTING', options:function(){return [
+        {value:'STANDARD_COUNTING',label:'Standard'},{value:'UNIQUE_COUNTING',label:'Unique'},{value:'SESSION_COUNTING',label:'Session'},
+        {value:'TRANSACTIONS_COUNTING',label:'Transactions'},{value:'ITEMS_SOLD_COUNTING',label:'Items sold'}];}},
+      {key:'floodlightTagType', label:'Tag type', type:'select', required:true, default:'GLOBAL_SITE_TAG', options:function(){return [
+        {value:'GLOBAL_SITE_TAG',label:'Google tag'},{value:'IFRAME',label:'iFrame'},{value:'IMAGE',label:'Image'}];}},
+      {key:'status', label:'Status', type:'select', required:true, default:'ACTIVE', options:function(){return [{value:'ACTIVE',label:'Active'},{value:'ARCHIVED_AND_DISABLED',label:'Archived & disabled'}];}}
+    ]
+  },
+  landingPages: {
+    label:'Landing Pages', singular:'Landing Page', icon:'📄', searchKeys:['name','url'],
+    fields:[
+      {key:'name', label:'Landing page name', type:'text', required:true},
+      {key:'advertiserId', label:'Advertiser', type:'select', required:true, options:advertiserOptions},
+      {key:'url', label:'URL', type:'text', required:true, placeholder:'https://example.com/landing'},
+      {key:'archived', label:'Archived', type:'checkbox'}
+    ]
+  },
+  remarketingLists: {
+    label:'Audiences', singular:'Remarketing List', icon:'👥', searchKeys:['name'],
+    fields:[
+      {key:'name', label:'List name', type:'text', required:true},
+      {key:'advertiserId', label:'Advertiser', type:'select', required:true, options:advertiserOptions},
+      {key:'description', label:'Description', type:'textarea'},
+      {key:'lifeSpan', label:'Membership duration (days)', type:'number', required:true, default:30},
+      {key:'active', label:'Active', type:'checkbox', default:true}
+    ]
+  },
+  eventTags: {
+    label:'Event Tags', singular:'Event Tag', icon:'🏷️', searchKeys:['name'],
+    fields:[
+      {key:'name', label:'Event tag name', type:'text', required:true},
+      {key:'advertiserId', label:'Advertiser', type:'select', required:true, options:advertiserOptions},
+      {key:'url', label:'Payload URL', type:'text', required:true},
+      {key:'type', label:'Event tag type', type:'select', required:true, default:'IMPRESSION_IMAGE_EVENT_TAG', options:function(){return [
+        {value:'IMPRESSION_IMAGE_EVENT_TAG',label:'Impression — image pixel'},{value:'IMPRESSION_JAVASCRIPT_EVENT_TAG',label:'Impression — JavaScript'},
+        {value:'CLICK_THROUGH_EVENT_TAG',label:'Click-through'}];}},
+      {key:'status', label:'Status', type:'select', required:true, default:'ENABLED', options:function(){return [{value:'ENABLED',label:'Enabled'},{value:'DISABLED',label:'Disabled'}];}}
+    ]
+  },
+  reports: {
+    label:'Reports', singular:'Report', icon:'📊', searchKeys:['name'],
+    fields:[
+      {key:'name', label:'Report name', type:'text', required:true},
+      {key:'type', label:'Report type', type:'select', required:true, default:'STANDARD', options:function(){return [
+        {value:'STANDARD',label:'Standard'},{value:'REACH',label:'Reach'},{value:'FLOODLIGHT',label:'Floodlight'},{value:'PATH_TO_CONVERSION',label:'Path to conversion'}];}},
+      {key:'dateRangeType', label:'Date range', type:'select', required:true, default:'LAST_30_DAYS', options:function(){return [
+        {value:'LAST_7_DAYS',label:'Last 7 days'},{value:'LAST_30_DAYS',label:'Last 30 days'},{value:'MONTH_TO_DATE',label:'Month to date'},{value:'QUARTER_TO_DATE',label:'Quarter to date'}];}},
+      {key:'ownerEmail', label:'Owner email', type:'text', placeholder:'you@agency.com'}
+    ]
+  },
+  users: {
+    label:'Users', singular:'User Profile', icon:'👤', searchKeys:['name','email'],
+    fields:[
+      {key:'name', label:'Full name', type:'text', required:true},
+      {key:'email', label:'Email', type:'text', required:true, placeholder:'name@agency.com'},
+      {key:'role', label:'User role', type:'select', required:true, options:roleOptions},
+      {key:'active', label:'Active', type:'checkbox', default:true}
+    ]
+  },
+  billingProfiles: {
+    label:'Billing Profiles', singular:'Billing Profile', icon:'💳', searchKeys:['name'], readonly:true,
+    fields:[
+      {key:'name', label:'Profile name', type:'text', required:true},
+      {key:'invoiceLevel', label:'Invoice level', type:'select', required:true, options:function(){return [
+        {value:'ACCOUNT_LEVEL',label:'Account level'},{value:'ADVERTISER_LEVEL',label:'Advertiser level'},{value:'CAMPAIGN_LEVEL',label:'Campaign level'}];}},
+      {key:'currencyCode', label:'Currency', type:'text', default:'USD'},
+      {key:'status', label:'Status', type:'select', required:true, default:'ACTIVE', options:function(){return [{value:'ACTIVE',label:'Active'},{value:'UNDER_REVIEW',label:'Under review'},{value:'ARCHIVED',label:'Archived'}];}}
+    ]
+  }
+};
+
+var MAJOR_ORDER = ['advertisers','campaigns','sites','placements','ads','creatives'];
+var NAV_SECTIONS = [
+  {label:'Overview', items:[ {route:'dashboard', label:'Dashboard', icon:'🏠'} ]},
+  {label:'Trafficking', items:[
+    {route:'list/advertisers', label:'Advertisers', icon:'🏢'},
+    {route:'list/campaigns', label:'Campaigns', icon:'📣'},
+    {route:'list/sites', label:'Sites', icon:'🌐'},
+    {route:'list/placements', label:'Placements', icon:'🧩'},
+    {route:'list/ads', label:'Ads', icon:'🎯'},
+    {route:'list/creatives', label:'Creatives', icon:'🎨'}
+  ]},
+  {label:'Measurement', items:[
+    {route:'list/floodlightConfigurations', label:'Floodlight', icon:'💡'},
+    {route:'list/remarketingLists', label:'Audiences', icon:'👥'},
+    {route:'list/landingPages', label:'Landing Pages', icon:'📄'},
+    {route:'list/eventTags', label:'Event Tags', icon:'🏷️'},
+    {route:'list/reports', label:'Reports', icon:'📊'}
+  ]},
+  {label:'Administration', items:[
+    {route:'list/users', label:'Users & Access', icon:'👤'},
+    {route:'list/billingProfiles', label:'Billing', icon:'💳'},
+    {route:'explorer', label:'API Explorer', icon:'⚙️'},
+    {route:'settings', label:'Settings', icon:'🛠️'}
+  ]}
+];
+
+/* =========================================================================
+   APP STATE
+   ========================================================================= */
+var UI = {
+  theme: 'auto',
+  sidebarOpen: false,
+  devMode: true,
+  route: {name:'dashboard', params:{}},
+  advertiserFilter: 'all',
+  listState: {},
+  modal: null,
+  toast: null,
+  searchQuery: '',
+  searchOpen: false,
+  expandedGroup: null,
+  dashboardRange: 30,
+  explorer: { resourceKey:'advertisers', op:'list', id:'', bodyText:'', result:null }
+};
+function listState(key){
+  if(!UI.listState[key]) UI.listState[key] = { search:'', sort:{key:'id',dir:'asc'}, page:1, pageSize:10, status:'all', loading:false };
+  return UI.listState[key];
+}
+
+/* =========================================================================
+   ROUTER
+   ========================================================================= */
+function parseHash(){
+  var h = location.hash.replace(/^#\/?/, '');
+  if(!h) return {name:'dashboard', params:{}};
+  var parts = h.split('/');
+  if(parts[0]==='list' && parts[1]) return {name:'list', params:{resource:parts[1]}};
+  if(parts[0]==='detail' && parts[1] && parts[2]) return {name:'detail', params:{resource:parts[1], id:parts[2], tab:parts[3]||'overview'}};
+  if(parts[0]==='explorer') return {name:'explorer', params:{}};
+  if(parts[0]==='settings') return {name:'settings', params:{}};
+  return {name:'dashboard', params:{}};
+}
+function navigate(hash){
+  UI.sidebarOpen = false;
+  location.hash = hash;
+}
+window.addEventListener('hashchange', function(){ UI.route = parseHash(); UI.modal=null; UI.searchOpen=false; render(); window.scrollTo(0,0); });
+
+/* =========================================================================
+   TOAST
+   ========================================================================= */
+var toastTimer = null;
+function showToast(msg, kind){
+  var root = document.getElementById('toast-root');
+  var d = document.createElement('div');
+  d.className = 'toast' + (kind==='error'?' error':(kind==='success'?' success':''));
+  d.textContent = msg;
+  root.appendChild(d);
+  setTimeout(function(){ d.style.opacity='0'; d.style.transition='opacity .25s'; setTimeout(function(){ if(d.parentNode) d.parentNode.removeChild(d); }, 260); }, 2600);
+}
+
+/* =========================================================================
+   SHARED UI COMPONENTS (return HTML strings)
+   ========================================================================= */
+function badge(text, kind){
+  return '<span class="badge badge-'+kind+'"><span class="badge-dot"></span>'+escapeHtml(text)+'</span>';
+}
+function statusBadge(status){
+  var clean = String(status||'').replace('PLACEMENT_STATUS_','').replace('AD_SERVING_','').replace(/_/g,' ').toLowerCase();
+  var display = clean ? clean.charAt(0).toUpperCase()+clean.slice(1) : '—';
+  return badge(display, statusBadgeKind(status));
+}
+function fieldInputHTML(f, value, contextItem){
+  var val = (value===undefined || value===null) ? (f.default!==undefined ? f.default : '') : value;
+  var reqAttr = f.required ? 'required' : '';
+  var idAttr = 'id="field-'+f.key+'"';
+  if(f.type==='textarea'){
+    return '<textarea name="'+f.key+'" '+idAttr+' '+reqAttr+' rows="3" placeholder="'+escapeHtml(f.placeholder||'')+'">'+escapeHtml(val)+'</textarea>';
+  }
+  if(f.type==='select'){
+    var opts = (typeof f.options==='function') ? f.options(contextItem) : (f.options||[]);
+    var html = '<select name="'+f.key+'" '+idAttr+' '+reqAttr+' data-field-key="'+f.key+'">';
+    if(!f.required) html += '<option value="">—</option>';
+    opts.forEach(function(o){ html += '<option value="'+escapeHtml(o.value)+'" '+(String(val)===String(o.value)?'selected':'')+'>'+escapeHtml(o.label)+'</option>'; });
+    html += '</select>';
+    return html;
+  }
+  if(f.type==='checkbox'){
+    return '<input type="checkbox" name="'+f.key+'" '+idAttr+' '+(val?'checked':'')+' value="true">';
+  }
+  if(f.type==='checklist'){
+    var copts = (typeof f.options==='function') ? f.options(contextItem) : (f.options||[]);
+    var valArr = Array.isArray(val) ? val : (val ? [val] : []);
+    if(!copts.length) return '<div class="field-help">No options available yet — create a related record first.</div>';
+    var chtml = '<div class="checklist">';
+    copts.forEach(function(o){ chtml += '<label class="checklist-item"><input type="checkbox" name="'+f.key+'" value="'+escapeHtml(o.value)+'" '+(valArr.indexOf(o.value)>-1?'checked':'')+'> '+escapeHtml(o.label)+'</label>'; });
+    chtml += '</div>';
+    return chtml;
+  }
+  var type = f.type==='number' ? 'number' : (f.type==='date' ? 'date' : 'text');
+  return '<input type="'+type+'" name="'+f.key+'" '+idAttr+' '+reqAttr+' placeholder="'+escapeHtml(f.placeholder||'')+'" value="'+escapeHtml(val)+'"'+(type==='number'?' step="any"':'')+'>';
+}
+function formHTML(resourceKey, existing, opts){
+  opts = opts || {};
+  var def = RESOURCES[resourceKey];
+  var rows = def.fields.map(function(f){
+    var value = existing ? existing[f.key] : (opts.presetValues && opts.presetValues[f.key]!==undefined ? opts.presetValues[f.key] : (f.default!==undefined ? f.default : undefined));
+    var span = (f.type==='textarea' || f.type==='checklist') ? ' span2' : '';
+    var rowClass = f.type==='checkbox' ? 'form-row form-row-inline span2' : 'form-row'+span;
+    return '<div class="'+rowClass+'">'+
+      '<label for="field-'+f.key+'">'+escapeHtml(f.label)+(f.required?' <span class="req">*</span>':'')+'</label>'+
+      fieldInputHTML(f, value, existing)+
+      (f.help ? '<div class="field-help">'+escapeHtml(f.help)+'</div>' : '')+
+      '</div>';
+  }).join('');
+  return '<form data-form="entity" data-resource="'+resourceKey+'" data-mode="'+(existing?'edit':'create')+'" data-id="'+(existing?existing.id:'')+'">'+
+    '<div class="form-grid">'+rows+'</div>'+
+    '<div class="modal-actions">'+
+      '<button type="button" class="btn btn-ghost" data-action="close-modal">Cancel</button>'+
+      '<button type="submit" class="btn btn-primary">'+(existing?'Save changes':'Create '+def.singular)+'</button>'+
+    '</div></form>';
+}
+function modalHTML(){
+  if(!UI.modal) return '';
+  var m = UI.modal;
+  var sizeClass = m.size==='narrow' ? ' narrow' : (m.size==='wide' ? ' wide' : '');
+  return '<div class="modal-scrim" data-action="scrim">'+
+    '<div class="modal'+sizeClass+'" data-action="stop">'+
+      '<div class="modal-header"><h3>'+escapeHtml(m.title)+'</h3><button class="modal-close" data-action="close-modal">✕</button></div>'+
+      '<div class="modal-body">'+m.body+'</div>'+
+    '</div></div>';
+}
+function openCreateModal(resourceKey, presetValues){
+  var def = RESOURCES[resourceKey];
+  UI.modal = { title:'New '+def.singular, body: formHTML(resourceKey, null, {presetValues:presetValues}) };
+  render();
+}
+function openEditModal(resourceKey, id){
+  var def = RESOURCES[resourceKey];
+  var item = byId(DB[resourceKey], id);
+  UI.modal = { title:'Edit '+def.singular, body: formHTML(resourceKey, item) };
+  render();
+}
+function openViewModal(resourceKey, id){
+  var def = RESOURCES[resourceKey];
+  var item = byId(DB[resourceKey], id);
+  if(!item){ return; }
+  var rows = def.fields.map(function(f){
+    var v = item[f.key];
+    var display = v;
+    if(f.type==='checkbox') display = v ? 'Yes' : 'No';
+    if(f.type==='select'){ var opts=(typeof f.options==='function')?f.options(item):f.options; var found=(opts||[]).filter(function(o){return String(o.value)===String(v);})[0]; display = found?found.label:(v||'—'); }
+    if(f.type==='checklist') display = Array.isArray(v) && v.length ? v.map(function(x){return placementName(x);}).join(', ') : '—';
+    return '<div class="kv-item"><div class="k">'+escapeHtml(f.label)+'</div><div class="v">'+escapeHtml(display===undefined||display===''?'—':display)+'</div></div>';
+  }).join('');
+  var idRow = '<div class="kv-item"><div class="k">ID</div><div class="v mono">'+escapeHtml(item.id)+'</div></div>';
+  var actions = def.readonly ? '' :
+    '<div class="modal-actions"><button class="btn btn-ghost" data-action="close-modal">Close</button>'+
+    '<button class="btn" data-action="edit-inline" data-resource="'+resourceKey+'" data-id="'+item.id+'">Edit</button>'+
+    '<button class="btn btn-danger" data-action="delete-item" data-resource="'+resourceKey+'" data-id="'+item.id+'">Delete</button></div>';
+  UI.modal = { title:def.singular+' details', body:'<div class="kv-grid">'+idRow+rows+'</div>'+actions };
+  render();
+}
+function openDeleteConfirm(resourceKey, id){
+  var def = RESOURCES[resourceKey];
+  var item = byId(DB[resourceKey], id);
+  var kids = cascadeDeleteInfo(resourceKey, id);
+  var warn = kids.length ? '<p style="color:var(--red);font-size:12.5px;">This will also permanently delete '+kids.length+' related record(s) (e.g. child campaigns, placements or ads).</p>' : '';
+  UI.modal = { title:'Delete '+def.singular+'?', size:'narrow', body:
+    '<p style="font-size:13.5px;">Are you sure you want to delete <strong>'+escapeHtml(item?item.name||item.id:id)+'</strong>? This cannot be undone.</p>'+
+    warn+
+    '<div class="modal-actions"><button class="btn btn-ghost" data-action="close-modal">Cancel</button>'+
+    '<button class="btn btn-danger" data-action="confirm-delete" data-resource="'+resourceKey+'" data-id="'+id+'">Delete</button></div>' };
+  render();
+}
+function closeModal(){ UI.modal = null; render(); }
+
+/* =========================================================================
+   TABLE ENGINE (list pages)
+   ========================================================================= */
+function applySearchSortPage(resourceKey, rows, columns){
+  var st = listState(resourceKey);
+  var def = RESOURCES[resourceKey];
+  var out = rows;
+  if(st.search){
+    var q = st.search.toLowerCase();
+    var keys = def.searchKeys && def.searchKeys.length ? def.searchKeys : ['id'];
+    out = out.filter(function(r){
+      return keys.some(function(k){ return String(r[k]||'').toLowerCase().indexOf(q)>-1; }) || String(r.id).indexOf(q)>-1;
+    });
+  }
+  if(st.status && st.status!=='all'){
+    out = out.filter(function(r){ return String(r._statusValue||r.status||r.activeStatus||'')===st.status; });
+  }
+  var sortKey = st.sort.key, dir = st.sort.dir==='asc'?1:-1;
+  out = out.slice().sort(function(a,b){
+    var av = a[sortKey], bv = b[sortKey];
+    if(av===undefined) av = a._sortVals ? a._sortVals[sortKey] : undefined;
+    if(bv===undefined) bv = b._sortVals ? b._sortVals[sortKey] : undefined;
+    if(av===undefined||av===null) av='';
+    if(bv===undefined||bv===null) bv='';
+    if(typeof av==='number' && typeof bv==='number') return (av-bv)*dir;
+    return String(av).localeCompare(String(bv))*dir;
+  });
+  var total = out.length;
+  var pageCount = Math.max(1, Math.ceil(total/st.pageSize));
+  st.page = clamp(st.page, 1, pageCount);
+  var start = (st.page-1)*st.pageSize;
+  var pageRows = out.slice(start, start+st.pageSize);
+  return { rows: pageRows, total: total, pageCount: pageCount };
+}
+function tableToolbarHTML(resourceKey, opts){
+  opts = opts || {};
+  var st = listState(resourceKey);
+  var statusFilterHTML = '';
+  if(opts.statusOptions){
+    statusFilterHTML = '<select class="filter-select" data-live="status" data-resource="'+resourceKey+'"><option value="all">All statuses</option>'+
+      opts.statusOptions.map(function(s){return '<option value="'+escapeHtml(s.value)+'" '+(st.status===s.value?'selected':'')+'>'+escapeHtml(s.label)+'</option>';}).join('')+'</select>';
+  }
+  return '<div class="table-toolbar">'+
+    '<div class="tbl-search-wrap"><span class="si">🔍</span><input class="tbl-search" id="search-'+resourceKey+'" data-live="search" data-resource="'+resourceKey+'" placeholder="Search '+escapeHtml(RESOURCES[resourceKey].label.toLowerCase())+'…" value="'+escapeHtml(st.search)+'"></div>'+
+    statusFilterHTML+
+    (opts.extraFilterHTML||'')+
+    '<div class="grow"></div>'+
+    (opts.rightHTML||'')+
+  '</div>';
+}
+function paginationHTML(resourceKey, total, pageCount){
+  var st = listState(resourceKey);
+  var start = total===0?0:(st.page-1)*st.pageSize+1;
+  var end = Math.min(total, st.page*st.pageSize);
+  return '<div class="table-footer">'+
+    '<div class="pg-info">Showing '+start+'–'+end+' of '+total+'</div>'+
+    '<div class="pg-controls">'+
+      '<select class="pg-size" data-live="pagesize" data-resource="'+resourceKey+'">'+
+        [10,25,50].map(function(n){return '<option value="'+n+'" '+(st.pageSize===n?'selected':'')+'>'+n+' / page</option>';}).join('')+
+      '</select>'+
+      '<button class="btn btn-sm btn-ghost" data-action="page-prev" data-resource="'+resourceKey+'" '+(st.page<=1?'disabled':'')+'>‹ Prev</button>'+
+      '<span class="pg-info">Page '+st.page+' of '+pageCount+'</span>'+
+      '<button class="btn btn-sm btn-ghost" data-action="page-next" data-resource="'+resourceKey+'" '+(st.page>=pageCount?'disabled':'')+'>Next ›</button>'+
+    '</div></div>';
+}
+function sortIndicator(resourceKey, key){
+  var st = listState(resourceKey);
+  if(st.sort.key!==key) return '';
+  return '<span class="sort-ind">'+(st.sort.dir==='asc'?'▲':'▼')+'</span>';
+}
+function renderTable(resourceKey, allRows, columns, opts){
+  opts = opts || {};
+  var st = listState(resourceKey);
+  var result = applySearchSortPage(resourceKey, allRows, columns);
+  var thead = '<tr>'+columns.map(function(c){
+    return '<th class="'+(c.sortable===false?'nosort':'')+'" '+(c.sortable===false?'':'data-action="sort" data-resource="'+resourceKey+'" data-sortkey="'+c.key+'"')+'>'+escapeHtml(c.label)+(c.sortable===false?'':sortIndicator(resourceKey,c.key))+'</th>';
+  }).join('')+'<th class="nosort"></th></tr>';
+  var body;
+  if(st.loading){
+    body = '<tr><td colspan="'+(columns.length+1)+'"><div class="loading-state"><span class="spinner"></span> Loading '+RESOURCES[resourceKey].label.toLowerCase()+'…</div></td></tr>';
+  } else if(result.rows.length===0){
+    body = '<tr><td colspan="'+(columns.length+1)+'"><div class="empty-state"><div class="ic">'+RESOURCES[resourceKey].icon+'</div><div class="t">No '+RESOURCES[resourceKey].label.toLowerCase()+' found</div><div>Try adjusting your search or filters, or create a new one.</div></div></td></tr>';
+  } else {
+    body = result.rows.map(function(r){
+      var cells = columns.map(function(c){ return '<td>'+(c.render ? c.render(r) : escapeHtml(r[c.key]===undefined?'—':r[c.key]))+'</td>'; }).join('');
+      var rowActions = '<td><div class="row-actions">'+
+        (opts.onView===false?'':'<button class="btn btn-sm btn-ghost" data-action="'+(opts.detail?'goto-detail':'view-item')+'" data-resource="'+resourceKey+'" data-id="'+r.id+'" title="View">👁</button>')+
+        (RESOURCES[resourceKey].readonly?'':'<button class="btn btn-sm btn-ghost" data-action="edit-item" data-resource="'+resourceKey+'" data-id="'+r.id+'" title="Edit">✎</button>'+
+        '<button class="btn btn-sm btn-ghost" data-action="delete-item" data-resource="'+resourceKey+'" data-id="'+r.id+'" title="Delete">🗑</button>')+
+      '</div></td>';
+      return '<tr data-action="'+(opts.detail?'goto-detail':'view-item')+'" data-resource="'+resourceKey+'" data-id="'+r.id+'">'+cells+rowActions+'</tr>';
+    }).join('');
+  }
+  return '<div class="panel">'+
+    (opts.toolbar||'')+
+    '<div class="table-wrap"><table class="dt"><thead>'+thead+'</thead><tbody>'+body+'</tbody></table></div>'+
+    paginationHTML(resourceKey, result.total, result.pageCount)+
+  '</div>';
+}
+
+/* =========================================================================
+   SVG CHARTS
+   ========================================================================= */
+function lineChartSVG(rows, opts){
+  opts = opts || {};
+  var w = opts.width||520, h = opts.height||130, pad = 8;
+  var color = opts.color || 'var(--accent)';
+  var vals = rows.map(function(r){ return r[opts.field]||0; });
+  var max = Math.max.apply(null, vals.concat([1]));
+  var min = 0;
+  var n = vals.length;
+  var innerW = w - pad*2, innerH = h - pad*2;
+  var pts = vals.map(function(v,i){
+    var x = pad + (n<=1?0:(i/(n-1))*innerW);
+    var y = pad + innerH - ((v-min)/(max-min||1))*innerH;
+    return [x,y];
+  });
+  var linePath = pts.map(function(p,i){ return (i===0?'M':'L')+p[0].toFixed(1)+','+p[1].toFixed(1); }).join(' ');
+  var areaPath = linePath + ' L'+pts[pts.length-1][0].toFixed(1)+','+(h-pad)+' L'+pts[0][0].toFixed(1)+','+(h-pad)+' Z';
+  var gridLines = '';
+  for(var g=0; g<=3; g++){
+    var gy = pad + innerH*(g/3);
+    gridLines += '<line x1="'+pad+'" y1="'+gy.toFixed(1)+'" x2="'+(w-pad)+'" y2="'+gy.toFixed(1)+'" stroke="var(--border)" stroke-width="1"/>';
+  }
+  var lastPt = pts[pts.length-1];
+  return '<svg viewBox="0 0 '+w+' '+h+'" width="100%" height="'+h+'" preserveAspectRatio="none" style="overflow:visible;">'+
+    gridLines+
+    '<path d="'+areaPath+'" fill="'+color+'" fill-opacity="0.12" stroke="none"/>'+
+    '<path d="'+linePath+'" fill="none" stroke="'+color+'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>'+
+    (lastPt ? '<circle cx="'+lastPt[0].toFixed(1)+'" cy="'+lastPt[1].toFixed(1)+'" r="3" fill="'+color+'"/>' : '')+
+  '</svg>';
+}
+function barListSVG(items, opts){
+  opts = opts || {};
+  if(!items.length) return '<div class="empty-state" style="padding:24px 10px;"><div class="t">No data yet</div></div>';
+  var max = Math.max.apply(null, items.map(function(i){return i.value;}).concat([1]));
+  return items.map(function(it){
+    var pct = max? Math.max(2,(it.value/max)*100) : 0;
+    return '<div class="bar-row">'+
+      '<div class="bar-label" title="'+escapeHtml(it.label)+'">'+escapeHtml(it.label)+'</div>'+
+      '<div class="bar-track"><div class="bar-fill" style="width:'+pct.toFixed(1)+'%"></div></div>'+
+      '<div class="bar-value">'+(opts.fmt?opts.fmt(it.value):fmtNum(it.value))+'</div>'+
+    '</div>';
+  }).join('');
+}
+
+/* =========================================================================
+   SHELL: SIDEBAR + TOPBAR
+   ========================================================================= */
+function sidebarHTML(){
+  var route = UI.route;
+  var currentHash = 'list/'+ (route.params.resource||'');
+  var groups = NAV_SECTIONS.map(function(sec){
+    var items = sec.items.map(function(it){
+      var active = (route.name==='dashboard' && it.route==='dashboard') ||
+                   (route.name==='list' && it.route==='list/'+route.params.resource) ||
+                   (route.name==='detail' && it.route==='list/'+route.params.resource) ||
+                   (route.name==='explorer' && it.route==='explorer') ||
+                   (route.name==='settings' && it.route==='settings');
+      return '<div class="nav-item'+(active?' active':'')+'" data-action="nav" data-route="'+it.route+'"><span class="ic">'+it.icon+'</span><span>'+escapeHtml(it.label)+'</span></div>';
+    }).join('');
+    return '<div class="nav-group"><div class="nav-group-label">'+escapeHtml(sec.label)+'</div>'+items+'</div>';
+  }).join('');
+  return '<div class="sidebar'+(UI.sidebarOpen?' open':'')+'">'+
+    '<div class="sidebar-brand"><div class="mark">CM</div><div><div class="name">CM360 Practice Simulator</div><div class="sub">Trafficking sandbox</div></div></div>'+
+    groups+
+    '<div class="sidebar-footer">All data is simulated locally in your browser. No live Google API connection.</div>'+
+  '</div>'+(UI.sidebarOpen?'<div class="sidebar-scrim" data-action="close-sidebar"></div>':'');
+}
+function globalSearchResults(){
+  var q = UI.searchQuery.trim().toLowerCase();
+  if(!q) return [];
+  var out = [];
+  function scan(resourceKey){
+    var def = RESOURCES[resourceKey];
+    var keys = def.searchKeys||[];
+    DB[resourceKey].forEach(function(item){
+      var hit = keys.some(function(k){ return String(item[k]||'').toLowerCase().indexOf(q)>-1; }) || String(item.id)===q;
+      if(hit) out.push({resourceKey:resourceKey, item:item});
+    });
+  }
+  ['advertisers','campaigns','sites','placements','ads','creatives','landingPages','remarketingLists','eventTags','reports','users'].forEach(scan);
+  return out.slice(0,18);
+}
+function topbarHTML(){
+  var advOptions = '<option value="all">All advertisers</option>' + DB.advertisers.map(function(a){return '<option value="'+a.id+'" '+(UI.advertiserFilter===a.id?'selected':'')+'>'+escapeHtml(a.name)+'</option>';}).join('');
+  var results = UI.searchOpen ? globalSearchResults() : [];
+  var resultsHTML = '';
+  if(UI.searchOpen && UI.searchQuery.trim()){
+    resultsHTML = '<div class="search-results">' + (results.length ? results.map(function(r){
+      return '<div class="search-result-item" data-action="search-goto" data-resource="'+r.resourceKey+'" data-id="'+r.item.id+'">'+
+        '<span class="search-result-type">'+escapeHtml(RESOURCES[r.resourceKey].singular)+'</span>'+
+        '<span>'+escapeHtml(r.item.name || r.item.id)+'</span></div>';
+    }).join('') : '<div class="search-result-item">No matches found</div>') + '</div>';
+  }
+  return '<div class="topbar">'+
+    '<button class="hamburger" data-action="toggle-sidebar">☰</button>'+
+    '<div class="selector"><span>🏢</span><select data-live="advertiser-filter">'+advOptions+'</select></div>'+
+    '<div class="search-wrap"><span class="search-icon">🔍</span>'+
+      '<input class="search-input" id="global-search" placeholder="Search advertisers, campaigns, placements, ads…" value="'+escapeHtml(UI.searchQuery)+'" data-live="global-search" autocomplete="off">'+
+      resultsHTML+
+    '</div>'+
+    '<div class="topbar-right">'+
+      '<button class="icon-btn'+(UI.devMode?' active':'')+'" data-action="toggle-devmode" title="Developer mode">{ }</button>'+
+      '<button class="icon-btn" data-action="toggle-theme" title="Toggle theme">'+(effectiveDark()?'☀️':'🌙')+'</button>'+
+    '</div>'+
+  '</div>';
+}
+function effectiveDark(){
+  if(UI.theme==='dark') return true;
+  if(UI.theme==='light') return false;
+  return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+function applyTheme(){
+  if(UI.theme==='auto') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', UI.theme);
+}
+function breadcrumbHTML(items){
+  return '<div class="breadcrumb">'+items.map(function(it,i){
+    var sep = i>0 ? '<span>›</span>' : '';
+    if(it.route) return sep+'<a href="javascript:void(0)" data-action="nav" data-route="'+it.route+'">'+escapeHtml(it.label)+'</a>';
+    return sep+'<span>'+escapeHtml(it.label)+'</span>';
+  }).join('')+'</div>';
+}
+
+/* =========================================================================
+   DEV MODE PANEL (last API call banner injected into pages)
+   ========================================================================= */
+function devTraceHTML(entries){
+  if(!UI.devMode || !entries || !entries.length) return '';
+  var items = entries.slice(0,3).map(function(e){
+    return '<div class="log-item">'+
+      '<div class="log-item-head"><span class="method-pill method-'+e.request.method+'">'+e.request.method+'</span>'+
+      '<span class="log-endpoint">'+escapeHtml(e.request.endpoint)+'</span>'+
+      '<span class="log-time">'+fmtDateTime(e.time)+'</span></div>'+
+      '<div class="code-block">'+escapeHtml(JSON.stringify(e.response,null,2)).slice(0,600)+'</div>'+
+    '</div>';
+  }).join('');
+  return '<div class="panel"><div class="panel-header"><div class="panel-title">⚙️ Developer mode — simulated API calls on this page</div>'+
+    '<button class="btn btn-sm btn-ghost" data-action="nav" data-route="explorer">Open API Explorer</button></div>'+
+    '<div class="panel-body">'+items+'</div></div>';
+}
+
+/* =========================================================================
+   DASHBOARD PAGE
+   ========================================================================= */
+function pageDashboard(){
+  var days = UI.dashboardRange;
+  var totals = sumPerf(perfInRange(days));
+  var activeCampaigns = DB.campaigns.filter(function(c){ return computeCampaignStatus(c)==='ACTIVE'; }).length;
+  var ctr = totals.impressions ? (totals.clicks/totals.impressions*100) : 0;
+  var convRate = totals.clicks ? (totals.conversions/totals.clicks*100) : 0;
+  var ecpm = totals.impressions ? (totals.spend/totals.impressions*1000) : 0;
+  var ecpc = totals.clicks ? (totals.spend/totals.clicks) : 0;
+  var floodlightConv = Math.round(totals.conversions*1.15);
+
+  var kpis = [
+    {label:'Campaigns', value: fmtNum(DB.campaigns.length)},
+    {label:'Active campaigns', value: fmtNum(activeCampaigns)},
+    {label:'Ads', value: fmtNum(DB.ads.length)},
+    {label:'Placements', value: fmtNum(DB.placements.length)},
+    {label:'Impressions', value: fmtNum(totals.impressions)},
+    {label:'Clicks', value: fmtNum(totals.clicks)},
+    {label:'CTR', value: fmtPct(ctr)},
+    {label:'Conversions', value: fmtNum(totals.conversions)},
+    {label:'Conv. rate', value: fmtPct(convRate)},
+    {label:'Spend', value: fmtCurrency(totals.spend)},
+    {label:'eCPM', value: fmtCurrency(ecpm)},
+    {label:'eCPC', value: fmtCurrency(ecpc)},
+    {label:'Floodlight conv.', value: fmtNum(floodlightConv)}
+  ];
+  var kpiHTML = kpis.map(function(k){ return '<div class="kpi-cell"><div class="kpi-label">'+escapeHtml(k.label)+'</div><div class="kpi-value">'+k.value+'</div></div>'; }).join('');
+
+  var series = perfByDate(days);
+  function chartCard(title, field, color, fmt){
+    var last = series.length? series[series.length-1][field] : 0;
+    return '<div class="panel chart-card"><div class="chart-title">'+title+'</div>'+
+      '<div class="chart-sub">Last value: '+(fmt?fmt(last):fmtNum(last))+' · '+days+'-day trend</div>'+
+      lineChartSVG(series, {field:field, color:color})+'</div>';
+  }
+
+  var rangeToggle = '<div class="range-toggle">'+[7,30,90].map(function(r){
+    return '<button data-action="set-range" data-range="'+r+'" class="'+(UI.dashboardRange===r?'active':'')+'">'+r+'d</button>';
+  }).join('')+'</div>';
+
+  var html = '';
+  html += '<div class="page-header"><div><h1 class="page-title">Dashboard</h1><div class="page-sub">Account-wide delivery and performance, simulated from your mock trafficking data.</div></div>'+
+    '<div class="page-actions">'+rangeToggle+'</div></div>';
+  html += '<div class="kpi-strip">'+kpiHTML+'</div>';
+  html += '<div class="grid-2">'+
+    chartCard('Impressions over time','impressions','#2B5FE2')+
+    chartCard('Clicks over time','clicks','#1E8E5A')+
+    chartCard('Conversions over time','conversions','#B7791F')+
+    chartCard('Spend over time','spend','#7C3AED', fmtCurrency)+
+  '</div>';
+  html += '<div class="grid-3">'+
+    '<div class="panel chart-card"><div class="chart-title">Campaign performance</div><div class="chart-sub">Top campaigns by spend</div>'+barListSVG(topCampaignsBySpend(days,6), {fmt:fmtCurrency})+'</div>'+
+    '<div class="panel chart-card"><div class="chart-title">Site / placement performance</div><div class="chart-sub">Top sites by impressions</div>'+barListSVG(topSitesByImpressions(days,6))+'</div>'+
+    '<div class="panel chart-card"><div class="chart-title">Creative performance</div><div class="chart-sub">Top creatives by impressions</div>'+barListSVG(topCreativesByImpressions(days,6))+'</div>'+
+  '</div>';
+  html += devTraceHTML(API_LOG);
+  return html;
+}
+
+/* =========================================================================
+   LIST PAGE — column definitions per resource
+   ========================================================================= */
+function getColumns(resourceKey){
+  switch(resourceKey){
+    case 'advertisers':
+      return [
+        {key:'id', label:'ID', render:function(r){return '<span class="cell-id">'+r.id+'</span>';}},
+        {key:'name', label:'Name', render:function(r){return '<span class="cell-name">'+escapeHtml(r.name)+'</span>';}},
+        {key:'advertiserGroup', label:'Group', render:function(r){return '<span class="cell-muted">'+escapeHtml(r.advertiserGroup||'—')+'</span>';}},
+        {key:'status', label:'Status', render:function(r){return statusBadge(r.status);}},
+        {key:'_campCount', label:'Campaigns', sortable:false, render:function(r){return fmtNum(campaignsForAdvertiser(r.id).length);}},
+        {key:'createdAt', label:'Created', render:function(r){return fmtDate((r.createdAt||'').slice(0,10));}}
+      ];
+    case 'campaigns':
+      return [
+        {key:'id', label:'ID', render:function(r){return '<span class="cell-id">'+r.id+'</span>';}},
+        {key:'name', label:'Name', render:function(r){return '<span class="cell-name">'+escapeHtml(r.name)+'</span>';}},
+        {key:'advertiserId', label:'Advertiser', render:function(r){return escapeHtml(advertiserName(r.advertiserId));}},
+        {key:'_status', label:'Status', sortable:false, render:function(r){return statusBadge(computeCampaignStatus(r));}},
+        {key:'startDate', label:'Start', render:function(r){return fmtDate(r.startDate);}},
+        {key:'endDate', label:'End', render:function(r){return fmtDate(r.endDate);}},
+        {key:'_placements', label:'Placements', sortable:false, render:function(r){return fmtNum(placementsForCampaign(r.id).length);}}
+      ];
+    case 'sites':
+      return [
+        {key:'id', label:'ID', render:function(r){return '<span class="cell-id">'+r.id+'</span>';}},
+        {key:'name', label:'Name', render:function(r){return '<span class="cell-name">'+escapeHtml(r.name)+'</span>';}},
+        {key:'url', label:'URL', render:function(r){return '<span class="cell-muted">'+escapeHtml(r.url)+'</span>';}},
+        {key:'approved', label:'Approved', render:function(r){return r.approved? badge('Approved','green') : badge('Pending','amber');}},
+        {key:'_placements', label:'Placements', sortable:false, render:function(r){return fmtNum(DB.placements.filter(function(p){return p.siteId===r.id;}).length);}}
+      ];
+    case 'placements':
+      return [
+        {key:'id', label:'ID', render:function(r){return '<span class="cell-id">'+r.id+'</span>';}},
+        {key:'name', label:'Name', render:function(r){return '<span class="cell-name">'+escapeHtml(r.name)+'</span>';}},
+        {key:'campaignId', label:'Campaign', render:function(r){return escapeHtml(campaignName(r.campaignId));}},
+        {key:'siteId', label:'Site', render:function(r){return escapeHtml(siteName(r.siteId));}},
+        {key:'compatibility', label:'Compatibility', render:function(r){return '<span class="cell-muted">'+escapeHtml(r.compatibility)+'</span>';}},
+        {key:'pricingType', label:'Pricing', render:function(r){return '<span class="cell-muted">'+escapeHtml((r.pricingType||'').replace('PRICING_TYPE_',''))+'</span>';}},
+        {key:'activeStatus', label:'Status', render:function(r){return statusBadge(r.activeStatus);}}
+      ];
+    case 'ads':
+      return [
+        {key:'id', label:'ID', render:function(r){return '<span class="cell-id">'+r.id+'</span>';}},
+        {key:'name', label:'Name', render:function(r){return '<span class="cell-name">'+escapeHtml(r.name)+'</span>';}},
+        {key:'campaignId', label:'Campaign', render:function(r){return escapeHtml(campaignName(r.campaignId));}},
+        {key:'type', label:'Type', render:function(r){return '<span class="cell-muted">'+escapeHtml((r.type||'').replace('AD_SERVING_',''))+'</span>';}},
+        {key:'creativeId', label:'Creative', render:function(r){return escapeHtml(creativeName(r.creativeId));}},
+        {key:'active', label:'Active', render:function(r){return r.active? badge('Active','green') : badge('Inactive','slate');}}
+      ];
+    case 'creatives':
+      return [
+        {key:'_thumb', label:'', sortable:false, render:function(r){return '<div class="creative-thumb" style="background:'+r.color+'">'+r.width+'×'+r.height+'</div>';}},
+        {key:'id', label:'ID', render:function(r){return '<span class="cell-id">'+r.id+'</span>';}},
+        {key:'name', label:'Name', render:function(r){return '<span class="cell-name">'+escapeHtml(r.name)+'</span>';}},
+        {key:'advertiserId', label:'Advertiser', render:function(r){return escapeHtml(advertiserName(r.advertiserId));}},
+        {key:'type', label:'Type', render:function(r){return '<span class="cell-muted">'+escapeHtml(r.type)+'</span>';}},
+        {key:'active', label:'Active', render:function(r){return r.active? badge('Active','green') : badge('Inactive','slate');}}
+      ];
+    case 'landingPages':
+      return [
+        {key:'id', label:'ID', render:function(r){return '<span class="cell-id">'+r.id+'</span>';}},
+        {key:'name', label:'Name', render:function(r){return '<span class="cell-name">'+escapeHtml(r.name)+'</span>';}},
+        {key:'advertiserId', label:'Advertiser', render:function(r){return escapeHtml(advertiserName(r.advertiserId));}},
+        {key:'url', label:'URL', render:function(r){return '<span class="cell-muted">'+escapeHtml(r.url)+'</span>';}},
+        {key:'archived', label:'Status', render:function(r){return r.archived? badge('Archived','slate') : badge('Active','green');}}
+      ];
+    case 'remarketingLists':
+      return [
+        {key:'id', label:'ID', render:function(r){return '<span class="cell-id">'+r.id+'</span>';}},
+        {key:'name', label:'Name', render:function(r){return '<span class="cell-name">'+escapeHtml(r.name)+'</span>';}},
+        {key:'advertiserId', label:'Advertiser', render:function(r){return escapeHtml(advertiserName(r.advertiserId));}},
+        {key:'listSize', label:'List size', render:function(r){return fmtNum(r.listSize);}},
+        {key:'lifeSpan', label:'Duration', render:function(r){return r.lifeSpan+' days';}},
+        {key:'active', label:'Active', render:function(r){return r.active? badge('Active','green') : badge('Inactive','slate');}}
+      ];
+    case 'eventTags':
+      return [
+        {key:'id', label:'ID', render:function(r){return '<span class="cell-id">'+r.id+'</span>';}},
+        {key:'name', label:'Name', render:function(r){return '<span class="cell-name">'+escapeHtml(r.name)+'</span>';}},
+        {key:'advertiserId', label:'Advertiser', render:function(r){return escapeHtml(advertiserName(r.advertiserId));}},
+        {key:'type', label:'Type', render:function(r){return '<span class="cell-muted">'+escapeHtml((r.type||'').replace(/_EVENT_TAG$/,''))+'</span>';}},
+        {key:'status', label:'Status', render:function(r){return statusBadge(r.status);}}
+      ];
+    case 'reports':
+      return [
+        {key:'id', label:'ID', render:function(r){return '<span class="cell-id">'+r.id+'</span>';}},
+        {key:'name', label:'Name', render:function(r){return '<span class="cell-name">'+escapeHtml(r.name)+'</span>';}},
+        {key:'type', label:'Type', render:function(r){return '<span class="cell-muted">'+escapeHtml(r.type)+'</span>';}},
+        {key:'dateRangeType', label:'Date range', render:function(r){return '<span class="cell-muted">'+escapeHtml((r.dateRangeType||'').replace(/_/g,' '))+'</span>';}},
+        {key:'lastModified', label:'Last modified', render:function(r){return fmtDateTime(r.lastModified);}},
+        {key:'_files', label:'Files', sortable:false, render:function(r){return fmtNum(DB.reportFiles.filter(function(f){return f.reportId===r.id;}).length);}}
+      ];
+    case 'users':
+      return [
+        {key:'id', label:'ID', render:function(r){return '<span class="cell-id">'+r.id+'</span>';}},
+        {key:'name', label:'Name', render:function(r){return '<span class="cell-name">'+escapeHtml(r.name)+'</span>';}},
+        {key:'email', label:'Email', render:function(r){return '<span class="cell-muted">'+escapeHtml(r.email)+'</span>';}},
+        {key:'role', label:'Role', render:function(r){var role=byId(DB.userRoles,r.role); return escapeHtml(role?role.name:'—');}},
+        {key:'active', label:'Active', render:function(r){return r.active? badge('Active','green') : badge('Disabled','slate');}},
+        {key:'lastLogin', label:'Last login', render:function(r){return fmtDateTime(r.lastLogin);}}
+      ];
+    case 'billingProfiles':
+      return [
+        {key:'id', label:'ID', render:function(r){return '<span class="cell-id">'+r.id+'</span>';}},
+        {key:'name', label:'Name', render:function(r){return '<span class="cell-name">'+escapeHtml(r.name)+(r.isDefault?' <span class="badge badge-accent" style="margin-left:6px;">Default</span>':'')+'</span>';}},
+        {key:'invoiceLevel', label:'Invoice level', render:function(r){return '<span class="cell-muted">'+escapeHtml((r.invoiceLevel||'').replace(/_/g,' '))+'</span>';}},
+        {key:'currencyCode', label:'Currency', render:function(r){return r.currencyCode;}},
+        {key:'status', label:'Status', render:function(r){return statusBadge(r.status);}}
+      ];
+    default: return [];
+  }
+}
+function statusOptionsFor(resourceKey){
+  var map = {
+    advertisers:[{value:'APPROVED',label:'Approved'},{value:'ON_HOLD',label:'On hold'}],
+    placements:[{value:'PLACEMENT_STATUS_ACTIVE',label:'Active'},{value:'PLACEMENT_STATUS_INACTIVE',label:'Inactive'},{value:'PLACEMENT_STATUS_ARCHIVED',label:'Archived'}],
+    eventTags:[{value:'ENABLED',label:'Enabled'},{value:'DISABLED',label:'Disabled'}],
+    billingProfiles:[{value:'ACTIVE',label:'Active'},{value:'UNDER_REVIEW',label:'Under review'},{value:'ARCHIVED',label:'Archived'}]
+  };
+  return map[resourceKey];
+}
+function statusValueKeyFor(resourceKey){
+  var map = {advertisers:'status', placements:'activeStatus', eventTags:'status', billingProfiles:'status'};
+  return map[resourceKey];
+}
+function rowsWithAdvertiserFilter(resourceKey){
+  var rows = DB[resourceKey].slice();
+  if(UI.advertiserFilter==='all') return rows;
+  var advId = UI.advertiserFilter;
+  if(resourceKey==='advertisers') return rows.filter(function(r){return r.id===advId;});
+  if(rows.length && rows[0].advertiserId!==undefined) return rows.filter(function(r){return r.advertiserId===advId;});
+  if(resourceKey==='campaigns') return rows.filter(function(r){return r.advertiserId===advId;});
+  if(resourceKey==='placements') return rows.filter(function(r){ var c=byId(DB.campaigns,r.campaignId); return c && c.advertiserId===advId; });
+  if(resourceKey==='ads') return rows.filter(function(r){ var c=byId(DB.campaigns,r.campaignId); return c && c.advertiserId===advId; });
+  return rows;
+}
+function genericListPage(resourceKey){
+  var def = RESOURCES[resourceKey];
+  var st = listState(resourceKey);
+  if(statusValueKeyFor(resourceKey)){
+    DB[resourceKey].forEach(function(r){ r._statusValue = r[statusValueKeyFor(resourceKey)]; });
+  }
+  var rows = rowsWithAdvertiserFilter(resourceKey);
+  var cols = getColumns(resourceKey);
+  var toolbar = tableToolbarHTML(resourceKey, {
+    statusOptions: statusOptionsFor(resourceKey),
+    rightHTML: def.readonly ? '' : '<button class="btn btn-primary" data-action="create-item" data-resource="'+resourceKey+'">+ New '+def.singular+'</button>'
+  });
+  var isMajor = !!def.major;
+  var html = '';
+  html += breadcrumbHTML([{label:'Home', route:'dashboard'},{label:def.label}]);
+  html += '<div class="page-header"><div><h1 class="page-title">'+def.icon+' '+escapeHtml(def.label)+'</h1>'+
+    '<div class="page-sub">'+fmtNum(rows.length)+' total '+def.label.toLowerCase()+(UI.advertiserFilter!=='all'?' · filtered to '+escapeHtml(advertiserName(UI.advertiserFilter)):'')+'</div></div></div>';
+  html += renderTable(resourceKey, rows, cols, {toolbar:toolbar, detail:isMajor});
+  html += devTraceHTML(API_LOG.filter(function(e){return e.resourceKey===resourceKey;}));
+  return html;
+}
+// add floodlightConfigurations columns (appended to getColumns via wrapper)
+var _origGetColumns = getColumns;
+getColumns = function(resourceKey){
+  if(resourceKey==='floodlightConfigurations'){
+    return [
+      {key:'id', label:'ID', render:function(r){return '<span class="cell-id">'+r.id+'</span>';}},
+      {key:'advertiserId', label:'Advertiser', render:function(r){return escapeHtml(advertiserName(r.advertiserId));}},
+      {key:'tagFormat', label:'Tag format', render:function(r){return '<span class="cell-muted">'+escapeHtml(r.tagFormat)+'</span>';}},
+      {key:'_groups', label:'Activity groups', sortable:false, render:function(r){return fmtNum(DB.floodlightActivityGroups.filter(function(g){return g.floodlightConfigurationId===r.id;}).length);}},
+      {key:'_activities', label:'Activities', sortable:false, render:function(r){var gids=DB.floodlightActivityGroups.filter(function(g){return g.floodlightConfigurationId===r.id;}).map(function(g){return g.id;}); return fmtNum(DB.floodlightActivities.filter(function(a){return gids.indexOf(a.floodlightActivityGroupId)>-1;}).length);}}
+    ];
+  }
+  return _origGetColumns(resourceKey);
+};
+
+/* =========================================================================
+   REPORT MODAL (custom — run + files)
+   ========================================================================= */
+function openReportModal(id){
+  var report = byId(DB.reports, id);
+  if(!report) return;
+  var files = DB.reportFiles.filter(function(f){return f.reportId===id;}).sort(function(a,b){return b.lastModifiedTime.localeCompare(a.lastModifiedTime);});
+  var filesHTML = files.length ? files.map(function(f){
+    return '<div class="mini-list-item"><div><strong>'+escapeHtml(f.fileName)+'</strong> <span class="cell-muted">· '+escapeHtml(f.format)+' · '+fmtDateTime(f.lastModifiedTime)+'</span></div>'+
+      '<div class="row-actions">'+statusBadge(f.status)+
+      '<button class="btn btn-sm btn-ghost" data-action="view-report-file" data-id="'+f.id+'">View</button>'+
+      '<button class="btn btn-sm btn-ghost" data-action="delete-report-file" data-id="'+f.id+'">🗑</button></div></div>';
+  }).join('') : '<div class="field-help">No report files yet. Click "Run report" to generate one.</div>';
+  UI.modal = { size:'wide', title: report.name, body:
+    '<div class="kv-grid" style="margin-bottom:14px;">'+
+      '<div class="kv-item"><div class="k">ID</div><div class="v mono">'+report.id+'</div></div>'+
+      '<div class="kv-item"><div class="k">Type</div><div class="v">'+escapeHtml(report.type)+'</div></div>'+
+      '<div class="kv-item"><div class="k">Date range</div><div class="v">'+escapeHtml((report.dateRangeType||'').replace(/_/g,' '))+'</div></div>'+
+      '<div class="kv-item"><div class="k">Owner</div><div class="v">'+escapeHtml(report.ownerEmail||'—')+'</div></div>'+
+    '</div>'+
+    '<div class="panel-header" style="padding:0 0 8px;border:none;"><div class="panel-title">Report files</div>'+
+      '<button class="btn btn-sm btn-primary" data-action="run-report" data-id="'+report.id+'">▶ Run report</button></div>'+
+    '<div id="report-files-list">'+filesHTML+'</div>'+
+    '<div class="modal-actions"><button class="btn btn-ghost" data-action="close-modal">Close</button>'+
+    '<button class="btn" data-action="edit-item" data-resource="reports" data-id="'+report.id+'">Edit</button>'+
+    '<button class="btn btn-danger" data-action="delete-item" data-resource="reports" data-id="'+report.id+'">Delete</button></div>'
+  };
+  render();
+}
+function runReport(reportId){
+  var report = byId(DB.reports, reportId);
+  if(!report) return;
+  UI.listState._runningReport = true; render();
+  setTimeout(function(){
+    var file = { id: nextId(DB,'reportFiles'), reportId: reportId, status:'REPORT_AVAILABLE', format:'CSV',
+      fileName: report.name.toLowerCase().replace(/[^a-z0-9]+/g,'_') + '_' + todayISO(0) + '.csv',
+      lastModifiedTime: new Date().toISOString(),
+      dateRange:{ startDate: todayISO(-30), endDate: todayISO(0) } };
+    DB.reportFiles.unshift(file);
+    report.lastModified = new Date().toISOString();
+    var res = apiCall('insert','reports',{body:{ _syntheticRun:true, name:report.name }});
+    saveDB();
+    showToast('Report file generated', 'success');
+    openReportModal(reportId);
+  }, 550);
+}
+function reportFileContentPreview(file){
+  var rows = ['date,impressions,clicks,conversions,spend'];
+  for(var i=6;i>=0;i--){
+    var d = addDaysISO(file.dateRange.endDate, -i);
+    rows.push([d, randInt(2000,9000), randInt(20,220), randInt(1,25), (randFloat(50,900)).toFixed(2)].join(','));
+  }
+  return rows.join('\n');
+}
+function openReportFileModal(fileId){
+  var file = byId(DB.reportFiles, fileId);
+  if(!file) return;
+  var content = reportFileContentPreview(file);
+  UI.modal = { size:'wide', title: file.fileName, body:
+    '<div class="kv-grid" style="margin-bottom:12px;">'+
+      '<div class="kv-item"><div class="k">Date range</div><div class="v">'+fmtDate(file.dateRange.startDate)+' – '+fmtDate(file.dateRange.endDate)+'</div></div>'+
+      '<div class="kv-item"><div class="k">Format</div><div class="v">'+file.format+'</div></div>'+
+      '<div class="kv-item"><div class="k">Status</div><div class="v">'+statusBadge(file.status)+'</div></div>'+
+    '</div>'+
+    '<div class="code-block" id="report-file-content">'+escapeHtml(content)+'</div>'+
+    '<div class="field-help">This is a simulated report file. Use Copy to grab the CSV contents — no live file download occurs in this practice environment.</div>'+
+    '<div class="modal-actions"><button class="btn btn-ghost" data-action="close-modal">Close</button>'+
+    '<button class="btn btn-primary" data-action="copy-report-file" data-id="'+file.id+'">Copy CSV</button></div>'
+  };
+  render();
+}
+
+/* =========================================================================
+   DETAIL PAGES
+   ========================================================================= */
+function tabsHTML(tabs, active, baseRoute){
+  return '<div class="tabs">'+tabs.map(function(t){
+    return '<div class="tab'+(active===t.key?' active':'')+'" data-action="nav" data-route="'+baseRoute+'/'+t.key+'">'+escapeHtml(t.label)+'</div>';
+  }).join('')+'</div>';
+}
+function miniTable(rows, cols, emptyLabel){
+  if(!rows.length) return '<div class="empty-state" style="padding:28px 10px;"><div class="t">'+escapeHtml(emptyLabel||'Nothing here yet')+'</div></div>';
+  var thead = '<tr>'+cols.map(function(c){return '<th class="nosort">'+escapeHtml(c.label)+'</th>';}).join('')+'</tr>';
+  var body = rows.map(function(r){
+    return '<tr data-action="goto-detail" data-resource="'+(r._resourceKey)+'" data-id="'+r.id+'">'+cols.map(function(c){return '<td>'+(c.render?c.render(r):escapeHtml(r[c.key]||'—'))+'</td>';}).join('')+'</tr>';
+  }).join('');
+  return '<div class="table-wrap"><table class="dt"><thead>'+thead+'</thead><tbody>'+body+'</tbody></table></div>';
+}
+function detailHeader(def, item, extraBadgeHTML){
+  return '<div class="detail-header"><div>'+
+    '<div class="detail-title">'+def.icon+' '+escapeHtml(item.name||item.id)+' '+(extraBadgeHTML||'')+'</div>'+
+    '<div class="detail-id">'+def.singular+' ID '+item.id+'</div>'+
+    '</div><div class="page-actions">'+
+    (def.readonly?'':'<button class="btn" data-action="edit-item" data-resource="'+UI.route.params.resource+'" data-id="'+item.id+'">✎ Edit</button>'+
+    '<button class="btn btn-danger" data-action="delete-item" data-resource="'+UI.route.params.resource+'" data-id="'+item.id+'">🗑 Delete</button>')+
+    '</div></div>';
+}
+
+function pageDetail(){
+  var resourceKey = UI.route.params.resource;
+  var id = UI.route.params.id;
+  var tab = UI.route.params.tab || 'overview';
+  var def = RESOURCES[resourceKey];
+  var item = byId(DB[resourceKey], id);
+  if(!def || !item){
+    return breadcrumbHTML([{label:'Home',route:'dashboard'}]) + '<div class="panel"><div class="error-state">The record you are looking for could not be found. It may have been deleted.</div></div>';
+  }
+  if(resourceKey==='floodlightConfigurations') return pageFloodlightDetail(item, tab);
+  var builders = {
+    advertisers: buildAdvertiserDetail, campaigns: buildCampaignDetail, sites: buildSiteDetail,
+    placements: buildPlacementDetail, ads: buildAdDetail, creatives: buildCreativeDetail
+  };
+  return builders[resourceKey](item, tab);
+}
+
+function buildAdvertiserDetail(adv, tab){
+  var crumbs = breadcrumbHTML([{label:'Home',route:'dashboard'},{label:'Advertisers',route:'list/advertisers'},{label:adv.name}]);
+  var camps = campaignsForAdvertiser(adv.id);
+  var creatives = creativesForAdvertiser(adv.id);
+  var lps = landingPagesForAdvertiser(adv.id);
+  var fc = DB.floodlightConfigurations.filter(function(f){return f.advertiserId===adv.id;})[0];
+  var tabs = [{key:'overview',label:'Overview'},{key:'campaigns',label:'Campaigns ('+camps.length+')'},{key:'creatives',label:'Creatives ('+creatives.length+')'},{key:'landing',label:'Landing Pages ('+lps.length+')'},{key:'floodlight',label:'Floodlight'}];
+  var body = '';
+  if(tab==='campaigns'){
+    body = miniTable(camps.map(function(c){c._resourceKey='campaigns';return c;}), [
+      {key:'id',label:'ID'},{key:'name',label:'Name'},
+      {key:'status',label:'Status',render:function(r){return statusBadge(computeCampaignStatus(r));}},
+      {key:'startDate',label:'Start',render:function(r){return fmtDate(r.startDate);}},
+      {key:'endDate',label:'End',render:function(r){return fmtDate(r.endDate);}}
+    ], 'No campaigns for this advertiser yet.');
+  } else if(tab==='creatives'){
+    body = miniTable(creatives.map(function(c){c._resourceKey='creatives';return c;}), [
+      {key:'id',label:'ID'},{key:'name',label:'Name'},{key:'type',label:'Type'},
+      {key:'active',label:'Active',render:function(r){return r.active?badge('Active','green'):badge('Inactive','slate');}}
+    ], 'No creatives for this advertiser yet.');
+  } else if(tab==='landing'){
+    body = miniTable(lps.map(function(c){c._resourceKey='landingPages';return c;}), [
+      {key:'id',label:'ID'},{key:'name',label:'Name'},{key:'url',label:'URL'}
+    ], 'No landing pages for this advertiser yet.');
+    body = body.replace(/data-action="goto-detail"/g, 'data-action="view-item"');
+  } else if(tab==='floodlight'){
+    if(fc){
+      body = '<div class="panel-body tight"><div class="panel-body">Advertiser floodlight configuration <span class="cell-id">'+fc.id+'</span> — tag format '+fc.tagFormat+'.</div></div>'+
+        '<div style="padding:0 16px 16px;"><button class="btn btn-primary" data-action="goto-detail" data-resource="floodlightConfigurations" data-id="'+fc.id+'">Open Floodlight Configuration →</button></div>';
+    } else {
+      body = '<div class="empty-state">No floodlight configuration set up for this advertiser.</div>';
+    }
+  } else {
+    body = '<div class="panel-body"><div class="kv-grid">'+
+      '<div class="kv-item"><div class="k">Status</div><div class="v">'+statusBadge(adv.status)+'</div></div>'+
+      '<div class="kv-item"><div class="k">Advertiser group</div><div class="v">'+escapeHtml(adv.advertiserGroup||'—')+'</div></div>'+
+      '<div class="kv-item"><div class="k">Default email</div><div class="v">'+escapeHtml(adv.defaultEmail||'—')+'</div></div>'+
+      '<div class="kv-item"><div class="k">Click-through URL suffix</div><div class="v mono">'+escapeHtml(adv.clickThroughUrlSuffix||'—')+'</div></div>'+
+      '<div class="kv-item"><div class="k">Floodlight configuration</div><div class="v mono">'+escapeHtml(fc?fc.id:'—')+'</div></div>'+
+      '<div class="kv-item"><div class="k">Created</div><div class="v">'+fmtDateTime(adv.createdAt)+'</div></div>'+
+    '</div></div>';
+  }
+  var html = crumbs + detailHeader(RESOURCES.advertisers, adv, statusBadge(adv.status)) +
+    tabsHTML(tabs, tab, 'detail/advertisers/'+adv.id) + '<div class="panel">'+body+'</div>' + devTraceHTML(API_LOG.filter(function(e){return e.resourceKey==='advertisers';}));
+  return html;
+}
+
+function buildCampaignDetail(camp, tab){
+  var crumbs = breadcrumbHTML([{label:'Home',route:'dashboard'},{label:'Campaigns',route:'list/campaigns'},{label:camp.name}]);
+  var pls = placementsForCampaign(camp.id);
+  var ads = adsForCampaign(camp.id);
+  var ets = DB.eventTags.filter(function(e){return e.advertiserId===camp.advertiserId;});
+  var tabs = [{key:'overview',label:'Overview'},{key:'placements',label:'Placements ('+pls.length+')'},{key:'ads',label:'Ads ('+ads.length+')'},{key:'events',label:'Event Tags ('+ets.length+')'},{key:'performance',label:'Performance'}];
+  var body = '';
+  if(tab==='placements'){
+    body = miniTable(pls.map(function(p){p._resourceKey='placements';return p;}), [
+      {key:'id',label:'ID'},{key:'name',label:'Name'},{key:'siteId',label:'Site',render:function(r){return siteName(r.siteId);}},
+      {key:'activeStatus',label:'Status',render:function(r){return statusBadge(r.activeStatus);}}
+    ], 'No placements yet — add one to start trafficking this campaign.');
+  } else if(tab==='ads'){
+    body = miniTable(ads.map(function(a){a._resourceKey='ads';return a;}), [
+      {key:'id',label:'ID'},{key:'name',label:'Name'},{key:'creativeId',label:'Creative',render:function(r){return creativeName(r.creativeId);}},
+      {key:'active',label:'Active',render:function(r){return r.active?badge('Active','green'):badge('Inactive','slate');}}
+    ], 'No ads yet.');
+  } else if(tab==='events'){
+    body = miniTable(ets.map(function(e){e._resourceKey='eventTags';return e;}), [
+      {key:'id',label:'ID'},{key:'name',label:'Name'},{key:'type',label:'Type'},{key:'status',label:'Status',render:function(r){return statusBadge(r.status);}}
+    ], 'No event tags configured for this advertiser.');
+    body = body.replace(/data-action="goto-detail"/g, 'data-action="view-item"');
+  } else if(tab==='performance'){
+    var series = perfByDate(30).length ? perfByDate(30) : [];
+    var plIds = pls.map(function(p){return p.id;});
+    var rows = perfInRange(30).filter(function(r){return plIds.indexOf(r.placementId)>-1;});
+    var byDate = {};
+    rows.forEach(function(r){ if(!byDate[r.date]) byDate[r.date]={date:r.date,impressions:0,clicks:0,conversions:0,spend:0}; var m=byDate[r.date]; m.impressions+=r.impressions; m.clicks+=r.clicks; m.conversions+=r.conversions; m.spend+=r.spend; });
+    var arr = Object.keys(byDate).sort().map(function(k){return byDate[k];});
+    var tot = sumPerf(rows);
+    body = '<div class="panel-body"><div class="kv-grid" style="margin-bottom:14px;">'+
+      '<div class="kv-item"><div class="k">Impressions (30d)</div><div class="v">'+fmtNum(tot.impressions)+'</div></div>'+
+      '<div class="kv-item"><div class="k">Clicks (30d)</div><div class="v">'+fmtNum(tot.clicks)+'</div></div>'+
+      '<div class="kv-item"><div class="k">Conversions (30d)</div><div class="v">'+fmtNum(tot.conversions)+'</div></div>'+
+      '<div class="kv-item"><div class="k">Spend (30d)</div><div class="v">'+fmtCurrency(tot.spend)+'</div></div>'+
+    '</div>'+(arr.length?lineChartSVG(arr,{field:'impressions',color:'#2B5FE2',height:150}):'<div class="empty-state">No performance data.</div>')+'</div>';
+  } else {
+    body = '<div class="panel-body"><div class="kv-grid">'+
+      '<div class="kv-item"><div class="k">Advertiser</div><div class="v">'+escapeHtml(advertiserName(camp.advertiserId))+'</div></div>'+
+      '<div class="kv-item"><div class="k">Status</div><div class="v">'+statusBadge(computeCampaignStatus(camp))+'</div></div>'+
+      '<div class="kv-item"><div class="k">Start date</div><div class="v">'+fmtDate(camp.startDate)+'</div></div>'+
+      '<div class="kv-item"><div class="k">End date</div><div class="v">'+fmtDate(camp.endDate)+'</div></div>'+
+      '<div class="kv-item"><div class="k">Default landing page</div><div class="v">'+escapeHtml(camp.defaultLandingPageId ? (byId(DB.landingPages,camp.defaultLandingPageId)||{}).name||'—' : '—')+'</div></div>'+
+      '<div class="kv-item"><div class="k">Comment</div><div class="v">'+escapeHtml(camp.comment||'—')+'</div></div>'+
+    '</div></div>';
+  }
+  return crumbs + detailHeader(RESOURCES.campaigns, camp, statusBadge(computeCampaignStatus(camp))) +
+    tabsHTML(tabs, tab, 'detail/campaigns/'+camp.id) + '<div class="panel">'+body+'</div>' + devTraceHTML(API_LOG.filter(function(e){return e.resourceKey==='campaigns';}));
+}
+
+function buildSiteDetail(site, tab){
+  var crumbs = breadcrumbHTML([{label:'Home',route:'dashboard'},{label:'Sites',route:'list/sites'},{label:site.name}]);
+  var pls = DB.placements.filter(function(p){return p.siteId===site.id;});
+  var tabs = [{key:'overview',label:'Overview'},{key:'placements',label:'Placements ('+pls.length+')'}];
+  var body;
+  if(tab==='placements'){
+    body = miniTable(pls.map(function(p){p._resourceKey='placements';return p;}), [
+      {key:'id',label:'ID'},{key:'name',label:'Name'},{key:'campaignId',label:'Campaign',render:function(r){return campaignName(r.campaignId);}},
+      {key:'activeStatus',label:'Status',render:function(r){return statusBadge(r.activeStatus);}}
+    ], 'No placements on this site yet.');
+  } else {
+    body = '<div class="panel-body"><div class="kv-grid">'+
+      '<div class="kv-item"><div class="k">URL</div><div class="v mono">'+escapeHtml(site.url)+'</div></div>'+
+      '<div class="kv-item"><div class="k">Approved</div><div class="v">'+(site.approved?badge('Approved','green'):badge('Pending','amber'))+'</div></div>'+
+      '<div class="kv-item"><div class="k">Key name</div><div class="v mono">'+escapeHtml(site.keyName||'—')+'</div></div>'+
+    '</div></div>';
+  }
+  return crumbs + detailHeader(RESOURCES.sites, site) + tabsHTML(tabs, tab, 'detail/sites/'+site.id) + '<div class="panel">'+body+'</div>' + devTraceHTML(API_LOG.filter(function(e){return e.resourceKey==='sites';}));
+}
+
+function buildPlacementDetail(pl, tab){
+  var crumbs = breadcrumbHTML([{label:'Home',route:'dashboard'},{label:'Placements',route:'list/placements'},{label:pl.name}]);
+  var ads = adsForPlacement(pl.id);
+  var tabs = [{key:'overview',label:'Overview'},{key:'ads',label:'Ads ('+ads.length+')'},{key:'targeting',label:'Targeting'}];
+  var body;
+  if(tab==='ads'){
+    body = miniTable(ads.map(function(a){a._resourceKey='ads';return a;}), [
+      {key:'id',label:'ID'},{key:'name',label:'Name'},{key:'creativeId',label:'Creative',render:function(r){return creativeName(r.creativeId);}},
+      {key:'active',label:'Active',render:function(r){return r.active?badge('Active','green'):badge('Inactive','slate');}}
+    ], 'No ads on this placement yet.');
+  } else if(tab==='targeting'){
+    body = '<div class="panel-body"><div class="kv-grid">'+
+      '<div class="kv-item"><div class="k">Geo targeting — countries</div><div class="v">'+escapeHtml(pl.geoCountries||'Worldwide (no restriction)')+'</div></div>'+
+      '<div class="kv-item"><div class="k">Technology — browsers</div><div class="v">'+escapeHtml(pl.techBrowsers||'All browsers')+'</div></div>'+
+    '</div></div>';
+  } else {
+    var perf = perfForPlacement(pl.id,30);
+    body = '<div class="panel-body"><div class="kv-grid">'+
+      '<div class="kv-item"><div class="k">Campaign</div><div class="v">'+escapeHtml(campaignName(pl.campaignId))+'</div></div>'+
+      '<div class="kv-item"><div class="k">Site</div><div class="v">'+escapeHtml(siteName(pl.siteId))+'</div></div>'+
+      '<div class="kv-item"><div class="k">Size</div><div class="v">'+pl.width+' × '+pl.height+'</div></div>'+
+      '<div class="kv-item"><div class="k">Compatibility</div><div class="v">'+escapeHtml(pl.compatibility)+'</div></div>'+
+      '<div class="kv-item"><div class="k">Pricing</div><div class="v">'+escapeHtml((pl.pricingType||'').replace('PRICING_TYPE_',''))+' @ '+fmtCurrency(pl.rate)+'</div></div>'+
+      '<div class="kv-item"><div class="k">Flight dates</div><div class="v">'+fmtDate(pl.startDate)+' – '+fmtDate(pl.endDate)+'</div></div>'+
+      '<div class="kv-item"><div class="k">Impressions (30d)</div><div class="v">'+fmtNum(perf.impressions)+'</div></div>'+
+      '<div class="kv-item"><div class="k">Spend (30d)</div><div class="v">'+fmtCurrency(perf.spend)+'</div></div>'+
+    '</div></div>';
+  }
+  return crumbs + detailHeader(RESOURCES.placements, pl, statusBadge(pl.activeStatus)) + tabsHTML(tabs, tab, 'detail/placements/'+pl.id) + '<div class="panel">'+body+'</div>' + devTraceHTML(API_LOG.filter(function(e){return e.resourceKey==='placements';}));
+}
+
+function buildAdDetail(ad, tab){
+  var crumbs = breadcrumbHTML([{label:'Home',route:'dashboard'},{label:'Ads',route:'list/ads'},{label:ad.name}]);
+  var creative = ad.creativeId ? byId(DB.creatives, ad.creativeId) : null;
+  var tabs = [{key:'overview',label:'Overview'},{key:'creative',label:'Creative'}];
+  var body;
+  if(tab==='creative'){
+    body = creative ? '<div class="panel-body"><div class="creative-thumb" style="width:'+Math.min(creative.width,400)+'px;height:'+Math.min(creative.height,240)+'px;background:'+creative.color+';font-size:13px;">'+creative.width+'×'+creative.height+'</div>'+
+      '<div style="margin-top:12px;"><button class="btn" data-action="goto-detail" data-resource="creatives" data-id="'+creative.id+'">Open creative →</button></div></div>'
+      : '<div class="empty-state">No creative assigned to this ad.</div>';
+  } else {
+    body = '<div class="panel-body"><div class="kv-grid">'+
+      '<div class="kv-item"><div class="k">Campaign</div><div class="v">'+escapeHtml(campaignName(ad.campaignId))+'</div></div>'+
+      '<div class="kv-item"><div class="k">Type</div><div class="v">'+escapeHtml((ad.type||'').replace('AD_SERVING_',''))+'</div></div>'+
+      '<div class="kv-item"><div class="k">Placements</div><div class="v">'+(ad.placementIds||[]).map(function(id){return escapeHtml(placementName(id));}).join(', ')+'</div></div>'+
+      '<div class="kv-item"><div class="k">Creative</div><div class="v">'+escapeHtml(creative?creative.name:'—')+'</div></div>'+
+      '<div class="kv-item"><div class="k">Flight dates</div><div class="v">'+fmtDate(ad.startDate)+' – '+fmtDate(ad.endDate)+'</div></div>'+
+    '</div></div>';
+  }
+  return crumbs + detailHeader(RESOURCES.ads, ad, ad.active?badge('Active','green'):badge('Inactive','slate')) + tabsHTML(tabs, tab, 'detail/ads/'+ad.id) + '<div class="panel">'+body+'</div>' + devTraceHTML(API_LOG.filter(function(e){return e.resourceKey==='ads';}));
+}
+
+function buildCreativeDetail(cr, tab){
+  var crumbs = breadcrumbHTML([{label:'Home',route:'dashboard'},{label:'Creatives',route:'list/creatives'},{label:cr.name}]);
+  var usedAds = DB.ads.filter(function(a){return a.creativeId===cr.id;});
+  var tabs = [{key:'overview',label:'Overview'},{key:'used',label:'Used in ads ('+usedAds.length+')'}];
+  var body;
+  if(tab==='used'){
+    body = miniTable(usedAds.map(function(a){a._resourceKey='ads';return a;}), [
+      {key:'id',label:'ID'},{key:'name',label:'Name'},{key:'campaignId',label:'Campaign',render:function(r){return campaignName(r.campaignId);}}
+    ], 'This creative is not assigned to any ads yet.');
+  } else {
+    body = '<div class="panel-body"><div class="creative-thumb" style="width:'+Math.min(cr.width,400)+'px;height:'+Math.min(cr.height,240)+'px;background:'+cr.color+';font-size:13px;margin-bottom:14px;">'+cr.width+'×'+cr.height+'</div>'+
+      '<div class="kv-grid">'+
+      '<div class="kv-item"><div class="k">Advertiser</div><div class="v">'+escapeHtml(advertiserName(cr.advertiserId))+'</div></div>'+
+      '<div class="kv-item"><div class="k">Type</div><div class="v">'+escapeHtml(cr.type)+'</div></div>'+
+      '<div class="kv-item"><div class="k">Size</div><div class="v">'+cr.width+' × '+cr.height+'</div></div>'+
+      '<div class="kv-item"><div class="k">Click-through URL</div><div class="v mono">'+escapeHtml(cr.clickThroughUrl||'—')+'</div></div>'+
+    '</div></div>';
+  }
+  return crumbs + detailHeader(RESOURCES.creatives, cr, cr.active?badge('Active','green'):badge('Inactive','slate')) + tabsHTML(tabs, tab, 'detail/creatives/'+cr.id) + '<div class="panel">'+body+'</div>' + devTraceHTML(API_LOG.filter(function(e){return e.resourceKey==='creatives';}));
+}
+
+/* =========================================================================
+   FLOODLIGHT CONFIGURATION DETAIL (nested groups + activities)
+   ========================================================================= */
+function pageFloodlightDetail(fc, tab){
+  var crumbs = breadcrumbHTML([{label:'Home',route:'dashboard'},{label:'Floodlight',route:'list/floodlightConfigurations'},{label:'Config '+fc.id}]);
+  var groups = DB.floodlightActivityGroups.filter(function(g){return g.floodlightConfigurationId===fc.id;});
+  var tabs = [{key:'overview',label:'Overview'},{key:'groups',label:'Activity Groups ('+groups.length+')'}];
+  var body;
+  if(tab==='groups'){
+    body = '<div class="panel-body">'+
+      '<div style="display:flex;justify-content:flex-end;margin-bottom:12px;">'+
+      '<button class="btn btn-primary btn-sm" data-action="create-fl-group" data-config="'+fc.id+'">+ New Activity Group</button></div>';
+    if(!groups.length){
+      body += '<div class="empty-state"><div class="ic">📁</div><div class="t">No activity groups yet</div><div>Create a group (e.g. Sales or Engagement) before adding activities.</div></div>';
+    } else {
+      groups.forEach(function(g){
+        var acts = DB.floodlightActivities.filter(function(a){return a.floodlightActivityGroupId===g.id;});
+        var expanded = UI.expandedGroup===g.id;
+        body += '<div class="panel" style="margin-bottom:10px;">'+
+          '<div class="panel-header" style="cursor:pointer;" data-action="toggle-group" data-id="'+g.id+'">'+
+            '<div class="panel-title">'+(expanded?'▾':'▸')+' '+escapeHtml(g.name)+' <span class="badge badge-accent" style="margin-left:8px;">'+escapeHtml(g.type)+'</span> <span class="cell-muted mono" style="margin-left:8px;font-size:11px;">'+g.id+'</span></div>'+
+            '<div class="row-actions">'+
+              '<button class="btn btn-sm btn-ghost" data-action="edit-fl-group" data-id="'+g.id+'">✎ Edit</button>'+
+              '<button class="btn btn-sm btn-ghost" data-action="delete-fl-group" data-id="'+g.id+'">🗑</button>'+
+            '</div></div>';
+        if(expanded){
+          body += '<div class="panel-body">'+
+            '<div style="display:flex;justify-content:flex-end;margin-bottom:10px;">'+
+            '<button class="btn btn-sm btn-primary" data-action="create-fl-activity" data-group="'+g.id+'">+ New Activity</button></div>';
+          if(!acts.length){
+            body += '<div class="field-help">No activities in this group yet.</div>';
+          } else {
+            acts.forEach(function(a){
+              body += '<div class="mini-list-item"><div><strong>'+escapeHtml(a.name)+'</strong> <span class="cell-muted mono">· tag='+escapeHtml(a.tagString)+' · '+escapeHtml(a.countingMethod.replace('_COUNTING',''))+'</span></div>'+
+                '<div class="row-actions">'+statusBadge(a.status)+
+                '<button class="btn btn-sm btn-ghost" data-action="edit-fl-activity" data-id="'+a.id+'">✎</button>'+
+                '<button class="btn btn-sm btn-ghost" data-action="delete-fl-activity" data-id="'+a.id+'">🗑</button></div></div>';
+            });
+          }
+          body += '</div>';
+        }
+        body += '</div>';
+      });
+    }
+    body += '</div>';
+  } else {
+    body = '<div class="panel-body"><div class="kv-grid">'+
+      '<div class="kv-item"><div class="k">Advertiser</div><div class="v">'+escapeHtml(advertiserName(fc.advertiserId))+'</div></div>'+
+      '<div class="kv-item"><div class="k">Tag format</div><div class="v">'+escapeHtml(fc.tagFormat)+'</div></div>'+
+      '<div class="kv-item"><div class="k">Activity groups</div><div class="v">'+groups.length+'</div></div>'+
+    '</div></div>';
+  }
+  return crumbs + detailHeader(RESOURCES.floodlightConfigurations, {id:fc.id, name:'Floodlight — '+advertiserName(fc.advertiserId)}) +
+    tabsHTML(tabs, tab, 'detail/floodlightConfigurations/'+fc.id) + '<div class="panel">'+body+'</div>' +
+    devTraceHTML(API_LOG.filter(function(e){return e.resourceKey.indexOf('floodlight')===0 || e.resourceKey.indexOf('loodlight')>-1;}));
+}
+function flGroupForm(existing, configId){
+  var def = RESOURCES.floodlightActivityGroups;
+  var body = formHTML('floodlightActivityGroups', existing);
+  body = body.replace('data-mode="'+(existing?'edit':'create')+'"', 'data-mode="'+(existing?'edit':'create')+'" data-parent="'+configId+'"');
+  return body;
+}
+function openFlGroupModal(configId, existing){
+  UI.modal = { title:(existing?'Edit':'New')+' Activity Group', body: flGroupForm(existing, configId) };
+  render();
+}
+function flActivityForm(existing, groupId){
+  var body = formHTML('floodlightActivities', existing);
+  body = body.replace('data-mode="'+(existing?'edit':'create')+'"', 'data-mode="'+(existing?'edit':'create')+'" data-parent="'+groupId+'"');
+  return body;
+}
+function openFlActivityModal(groupId, existing){
+  UI.modal = { title:(existing?'Edit':'New')+' Floodlight Activity', body: flActivityForm(existing, groupId) };
+  render();
+}
+
+/* =========================================================================
+   API EXPLORER PAGE
+   ========================================================================= */
+function explorerOperationsFor(resourceKey){
+  return ['list','get','insert','update','delete'];
+}
+function pageExplorer(){
+  var ex = UI.explorer;
+  var def = RESOURCES[ex.resourceKey];
+  var ops = explorerOperationsFor(ex.resourceKey);
+  var needsId = (ex.op==='get' || ex.op==='update' || ex.op==='delete');
+  var needsBody = (ex.op==='insert' || ex.op==='update');
+  var idOptions = DB[ex.resourceKey].map(function(x){return '<option value="'+x.id+'" '+(ex.id===x.id?'selected':'')+'>'+x.id+' — '+escapeHtml(x.name||x.id)+'</option>';}).join('');
+
+  var resourceOptions = Object.keys(RESOURCES).map(function(k){return '<option value="'+k+'" '+(ex.resourceKey===k?'selected':'')+'>'+RESOURCES[k].label+'</option>';}).join('');
+  var opOptions = ops.map(function(o){return '<option value="'+o+'" '+(ex.op===o?'selected':'')+'>'+o.toUpperCase()+'</option>';}).join('');
+
+  var left = '<div class="panel"><div class="panel-header"><div class="panel-title">Build a request</div></div><div class="panel-body">'+
+    '<div class="form-grid">'+
+      '<div class="form-row"><label>Resource</label><select id="explorer-resource" data-live="explorer-resource">'+resourceOptions+'</select></div>'+
+      '<div class="form-row"><label>Operation</label><select id="explorer-op" data-live="explorer-op">'+opOptions+'</select></div>'+
+      (needsId? '<div class="form-row span2"><label>Record ID</label><select id="explorer-id" data-live="explorer-id"><option value="">— choose a record —</option>'+idOptions+'</select></div>' : '')+
+      (needsBody? '<div class="form-row span2"><label>Request body (JSON — editable)</label><textarea id="explorer-body" data-live="explorer-body" rows="8" class="mono" style="font-family:var(--font-mono);">'+escapeHtml(ex.bodyText || JSON.stringify(sampleBodyFor(ex.resourceKey),null,2))+'</textarea></div>' : '')+
+    '</div>'+
+    '<div class="modal-actions" style="border:none;padding-top:10px;"><button class="btn btn-primary" data-action="run-explorer">▶ Run request</button>'+
+    '<button class="btn btn-ghost" data-action="reset-mock-data">↺ Reset mock data</button></div>'+
+  '</div></div>';
+
+  var resultHTML = '';
+  if(ex.result){
+    var e = ex.result;
+    resultHTML = '<div class="panel"><div class="panel-header"><div class="panel-title">Simulated request &amp; response</div>'+
+      '<div class="row-actions"><button class="btn btn-sm btn-ghost" data-action="copy-explorer-request">Copy request</button><button class="btn btn-sm btn-ghost" data-action="copy-explorer-response">Copy response</button></div></div>'+
+      '<div class="panel-body">'+
+      '<div class="kv-inline"><span class="method-pill method-'+e.request.method+'">'+e.request.method+'</span><span>'+escapeHtml(e.request.endpoint)+'</span></div>'+
+      '<div class="chart-sub" style="margin-bottom:10px;">Status '+e.status+' · scope '+escapeHtml(e.request.scope)+'</div>'+
+      '<div class="grid-2">'+
+        '<div><div class="chart-title">Request</div><div class="code-block" id="explorer-req-block">'+escapeHtml(JSON.stringify({method:e.request.method, endpoint:e.request.endpoint, pathParameters:e.request.pathParameters, queryParameters:e.request.queryParameters, requestBody:e.request.requestBody},null,2))+'</div></div>'+
+        '<div><div class="chart-title">Response</div><div class="code-block" id="explorer-res-block">'+escapeHtml(JSON.stringify(e.response,null,2))+'</div></div>'+
+      '</div></div></div>';
+  } else {
+    resultHTML = '<div class="panel"><div class="empty-state"><div class="ic">⚙️</div><div class="t">No request run yet</div><div>Choose a resource and operation, then click "Run request" to see the simulated API call.</div></div></div>';
+  }
+
+  var logHTML = '<div class="panel"><div class="panel-header"><div class="panel-title">Recent API calls across the app ('+API_LOG.length+')</div>'+
+    (API_LOG.length? '<button class="btn btn-sm btn-ghost" data-action="clear-log">Clear</button>':'')+'</div><div class="panel-body">'+
+    (API_LOG.length ? API_LOG.slice(0,12).map(function(e){
+      return '<div class="log-item"><div class="log-item-head"><span class="method-pill method-'+e.request.method+'">'+e.request.method+'</span>'+
+        '<span class="log-endpoint">'+escapeHtml(e.request.endpoint)+'</span><span class="badge badge-'+(e.status<400?'green':'red')+'">'+e.status+'</span>'+
+        '<span class="log-time">'+fmtDateTime(e.time)+'</span></div></div>';
+    }).join('') : '<div class="field-help">No calls logged yet — browse the app or run a request above.</div>')+
+    '</div></div>';
+
+  return breadcrumbHTML([{label:'Home',route:'dashboard'},{label:'API Explorer'}]) +
+    '<div class="page-header"><div><h1 class="page-title">⚙️ API Explorer</h1><div class="page-sub">Practice constructing CM360 API v4-style requests and inspect simulated responses.</div></div></div>'+
+    left + resultHTML + logHTML;
+}
+
+/* =========================================================================
+   SETTINGS PAGE
+   ========================================================================= */
+function pageSettings(){
+  return breadcrumbHTML([{label:'Home',route:'dashboard'},{label:'Settings'}]) +
+    '<div class="page-header"><div><h1 class="page-title">🛠️ Account Administration</h1><div class="page-sub">Sandbox account preferences. All settings are simulated and stored locally.</div></div></div>'+
+    '<div class="panel"><div class="panel-header"><div class="panel-title">Account</div></div><div class="panel-body">'+
+      '<div class="kv-grid">'+
+      '<div class="kv-item"><div class="k">Account name</div><div class="v">'+escapeHtml(DB.meta.accountName)+'</div></div>'+
+      '<div class="kv-item"><div class="k">Account ID</div><div class="v mono">'+DB.meta.accountId+'</div></div>'+
+      '<div class="kv-item"><div class="k">Profile ID</div><div class="v mono">'+DB.meta.profileId+'</div></div>'+
+      '<div class="kv-item"><div class="k">Currency</div><div class="v">'+DB.meta.currency+'</div></div>'+
+      '<div class="kv-item"><div class="k">Time zone</div><div class="v">'+DB.meta.timezone+'</div></div>'+
+      '</div></div></div>'+
+    '<div class="panel"><div class="panel-header"><div class="panel-title">Preferences</div></div><div class="panel-body">'+
+      '<div class="settings-row"><div><strong>Dark mode</strong><div class="cell-muted">Follows your system setting by default.</div></div>'+
+      '<div class="toggle'+(effectiveDark()?' on':'')+'" data-action="toggle-theme"><div class="dot"></div></div></div>'+
+      '<div class="settings-row"><div><strong>Developer mode</strong><div class="cell-muted">Shows simulated API request/response traces on every page.</div></div>'+
+      '<div class="toggle'+(UI.devMode?' on':'')+'" data-action="toggle-devmode"><div class="dot"></div></div></div>'+
+      '<div class="settings-row"><div><strong>Reset mock data</strong><div class="cell-muted">Regenerates all advertisers, campaigns, placements and performance history.</div></div>'+
+      '<button class="btn btn-danger btn-sm" data-action="reset-mock-data">↺ Reset all data</button></div>'+
+    '</div></div>'+
+    '<div class="panel"><div class="panel-header"><div class="panel-title">User roles (reference)</div></div><div class="panel-body">'+
+      DB.userRoles.map(function(r){ return '<div class="mini-list-item"><div><strong>'+escapeHtml(r.name)+'</strong> <span class="cell-muted">— '+escapeHtml(r.description)+'</span></div></div>'; }).join('')+
+    '</div></div>';
+}
+
+/* =========================================================================
+   MAIN RENDER
+   ========================================================================= */
+function render(){
+  applyTheme();
+  var content;
+  if(UI.route.name==='dashboard') content = pageDashboard();
+  else if(UI.route.name==='list') content = genericListPage(UI.route.params.resource);
+  else if(UI.route.name==='detail') content = pageDetail();
+  else if(UI.route.name==='explorer') content = pageExplorer();
+  else if(UI.route.name==='settings') content = pageSettings();
+  else content = pageDashboard();
+
+  var app = document.getElementById('app');
+  app.innerHTML = sidebarHTML() + '<div class="shell">' + topbarHTML() + '<div class="content">' + content + '</div></div>' + modalHTML();
+}
+function rerenderPreserveFocus(){
+  var active = document.activeElement;
+  var id = active && active.id;
+  var selStart, selEnd;
+  if(active && (active.tagName==='INPUT' || active.tagName==='TEXTAREA')){
+    try{ selStart = active.selectionStart; selEnd = active.selectionEnd; }catch(e){}
+  }
+  render();
+  if(id){
+    var el2 = document.getElementById(id);
+    if(el2){
+      el2.focus();
+      if(selStart!==undefined && el2.setSelectionRange){ try{ el2.setSelectionRange(selStart, selEnd); }catch(e){} }
+    }
+  }
+}
+
+/* =========================================================================
+   EVENT DELEGATION
+   ========================================================================= */
+function onAppInput(e){
+  var t = e.target;
+  var live = t.getAttribute && t.getAttribute('data-live');
+  if(!live) return;
+  if(live==='search'){ var rk=t.getAttribute('data-resource'); listState(rk).search=t.value; listState(rk).page=1; rerenderPreserveFocus(); }
+  else if(live==='status'){ var rk2=t.getAttribute('data-resource'); listState(rk2).status=t.value; listState(rk2).page=1; render(); }
+  else if(live==='pagesize'){ var rk3=t.getAttribute('data-resource'); listState(rk3).pageSize=Number(t.value); listState(rk3).page=1; render(); }
+  else if(live==='advertiser-filter'){ UI.advertiserFilter=t.value; render(); }
+  else if(live==='global-search'){ UI.searchQuery=t.value; UI.searchOpen = !!t.value; rerenderPreserveFocus(); }
+  else if(live==='explorer-resource'){ UI.explorer.resourceKey=t.value; UI.explorer.id=''; UI.explorer.result=null; UI.explorer.bodyText=''; render(); }
+  else if(live==='explorer-op'){ UI.explorer.op=t.value; UI.explorer.result=null; render(); }
+  else if(live==='explorer-id'){ UI.explorer.id=t.value; }
+  else if(live==='explorer-body'){ UI.explorer.bodyText=t.value; }
+}
+
+function gatherFormBody(resourceKey, form){
+  var def = RESOURCES[resourceKey];
+  var fd = new FormData(form);
+  var body = {};
+  def.fields.forEach(function(f){
+    if(f.type==='checkbox'){ body[f.key] = fd.get(f.key)==='true'; }
+    else if(f.type==='checklist'){ body[f.key] = fd.getAll(f.key); }
+    else if(f.type==='number'){ var v=fd.get(f.key); body[f.key] = (v===null||v==='') ? null : Number(v); }
+    else { body[f.key] = (fd.get(f.key)||'').toString().trim(); }
+  });
+  return body;
+}
+function onAppSubmit(e){
+  var form = e.target.closest ? e.target.closest('[data-form="entity"]') : null;
+  if(!form) return;
+  e.preventDefault();
+  var resourceKey = form.getAttribute('data-resource');
+  var mode = form.getAttribute('data-mode');
+  var id = form.getAttribute('data-id');
+  var parent = form.getAttribute('data-parent');
+  var body = gatherFormBody(resourceKey, form);
+  if(resourceKey==='floodlightActivityGroups' && parent && mode==='create'){ body.floodlightConfigurationId = parent; var cfg=byId(DB.floodlightConfigurations,parent); if(cfg) body.advertiserId = cfg.advertiserId; }
+  if(resourceKey==='floodlightActivities' && parent && mode==='create'){ body.floodlightActivityGroupId = parent; var grp=byId(DB.floodlightActivityGroups,parent); if(grp){ body.floodlightConfigurationId = grp.floodlightConfigurationId; body.advertiserId = grp.advertiserId; } }
+  var errors = validateEntity(resourceKey, body, mode);
+  if(errors.length){ showToast(errors[0], 'error'); return; }
+  var op = mode==='create' ? 'insert' : 'update';
+  var res = apiCall(op, resourceKey, {id:id, body:body});
+  if(!res.ok){ showToast(res.data.error.message, 'error'); return; }
+  saveDB();
+  var def = RESOURCES[resourceKey];
+  showToast((mode==='create'? (def?def.singular:'Record')+' created' : (def?def.singular:'Record')+' updated'), 'success');
+  closeModal();
+}
+
+function onAppClick(e){
+  if(UI.searchOpen && (!e.target.closest || !e.target.closest('.search-wrap'))){
+    UI.searchOpen = false;
+    var stillTarget = e.target.closest ? e.target.closest('[data-action]') : null;
+    if(!stillTarget){ render(); return; }
+  }
+  var target = e.target.closest ? e.target.closest('[data-action]') : null;
+  if(!target) return;
+  var action = target.getAttribute('data-action');
+  if(action==='stop'){ return; }
+
+  if(action==='nav'){ e.preventDefault(); navigate('#/'+target.getAttribute('data-route')); return; }
+  if(action==='toggle-sidebar'){ UI.sidebarOpen = !UI.sidebarOpen; render(); return; }
+  if(action==='close-sidebar'){ UI.sidebarOpen = false; render(); return; }
+  if(action==='toggle-theme'){ UI.theme = effectiveDark() ? 'light' : 'dark'; render(); return; }
+  if(action==='toggle-devmode'){ UI.devMode = !UI.devMode; render(); return; }
+
+  if(action==='create-item'){ openCreateModal(target.getAttribute('data-resource')); return; }
+  if(action==='edit-item' || action==='edit-inline'){ openEditModal(target.getAttribute('data-resource'), target.getAttribute('data-id')); return; }
+  if(action==='delete-item'){ openDeleteConfirm(target.getAttribute('data-resource'), target.getAttribute('data-id')); return; }
+  if(action==='confirm-delete'){
+    var rk = target.getAttribute('data-resource'), id = target.getAttribute('data-id');
+    var res = apiCall('delete', rk, {id:id});
+    if(!res.ok){ showToast(res.data.error.message,'error'); return; }
+    saveDB();
+    showToast(RESOURCES[rk].singular+' deleted'+(res.data.cascaded?(' (with '+res.data.cascaded+' related records)'):''), 'success');
+    UI.modal = null;
+    if(UI.route.name==='detail' && UI.route.params.resource===rk && UI.route.params.id===id){ navigate('#/list/'+rk); }
+    else render();
+    return;
+  }
+  if(action==='view-item'){
+    var rk2 = target.getAttribute('data-resource'), id2 = target.getAttribute('data-id');
+    if(rk2==='reports'){ openReportModal(id2); } else { openViewModal(rk2, id2); }
+    return;
+  }
+  if(action==='goto-detail'){
+    var rk3 = target.getAttribute('data-resource'), id3 = target.getAttribute('data-id');
+    if(rk3==='reports'){ openReportModal(id3); return; }
+    if(!RESOURCES[rk3] || !RESOURCES[rk3].major){ openViewModal(rk3, id3); return; }
+    navigate('#/detail/'+rk3+'/'+id3);
+    return;
+  }
+  if(action==='search-goto'){
+    UI.searchOpen = false; UI.searchQuery='';
+    var rk4 = target.getAttribute('data-resource'), id4 = target.getAttribute('data-id');
+    if(rk4==='reports'){ navigate('#/list/reports'); setTimeout(function(){ openReportModal(id4); },0); return; }
+    if(RESOURCES[rk4] && RESOURCES[rk4].major){ navigate('#/detail/'+rk4+'/'+id4); }
+    else { navigate('#/list/'+rk4); setTimeout(function(){ openViewModal(rk4,id4); },0); }
+    return;
+  }
+
+  if(action==='sort'){
+    var rk5 = target.getAttribute('data-resource'), key = target.getAttribute('data-sortkey');
+    var st = listState(rk5);
+    if(st.sort.key===key) st.sort.dir = st.sort.dir==='asc'?'desc':'asc'; else { st.sort.key=key; st.sort.dir='asc'; }
+    render(); return;
+  }
+  if(action==='page-prev'){ var rkp=target.getAttribute('data-resource'); listState(rkp).page = Math.max(1, listState(rkp).page-1); render(); return; }
+  if(action==='page-next'){ var rkn=target.getAttribute('data-resource'); listState(rkn).page = listState(rkn).page+1; render(); return; }
+
+  if(action==='close-modal' || action==='scrim'){ closeModal(); return; }
+
+  if(action==='set-range'){ UI.dashboardRange = Number(target.getAttribute('data-range')); render(); return; }
+
+  if(action==='create-fl-group'){ openFlGroupModal(target.getAttribute('data-config'), null); return; }
+  if(action==='edit-fl-group'){ openFlGroupModal(null, byId(DB.floodlightActivityGroups, target.getAttribute('data-id'))); return; }
+  if(action==='delete-fl-group'){ openDeleteConfirm('floodlightActivityGroups', target.getAttribute('data-id')); return; }
+  if(action==='toggle-group'){ var gid=target.getAttribute('data-id'); UI.expandedGroup = (UI.expandedGroup===gid)? null : gid; render(); return; }
+  if(action==='create-fl-activity'){ openFlActivityModal(target.getAttribute('data-group'), null); return; }
+  if(action==='edit-fl-activity'){ openFlActivityModal(null, byId(DB.floodlightActivities, target.getAttribute('data-id'))); return; }
+  if(action==='delete-fl-activity'){ openDeleteConfirm('floodlightActivities', target.getAttribute('data-id')); return; }
+
+  if(action==='run-report'){ runReport(target.getAttribute('data-id')); return; }
+  if(action==='view-report-file'){ openReportFileModal(target.getAttribute('data-id')); return; }
+  if(action==='delete-report-file'){
+    var f = byId(DB.reportFiles, target.getAttribute('data-id'));
+    if(f){ removeById(DB.reportFiles, f.id); saveDB(); showToast('Report file deleted','success'); openReportModal(f.reportId); }
+    return;
+  }
+  if(action==='copy-report-file'){
+    var fid = target.getAttribute('data-id'); var file=byId(DB.reportFiles,fid);
+    if(file){ copyToClipboard(reportFileContentPreview(file)); showToast('CSV copied to clipboard','success'); }
+    return;
+  }
+
+  if(action==='run-explorer'){
+    var ex = UI.explorer;
+    var idEl = document.getElementById('explorer-id');
+    var bodyEl = document.getElementById('explorer-body');
+    var idVal = idEl ? idEl.value : ex.id;
+    var opts = {};
+    if(idVal) opts.id = idVal;
+    if(bodyEl){
+      try{ opts.body = JSON.parse(bodyEl.value); }
+      catch(err){ showToast('Request body is not valid JSON', 'error'); return; }
+    }
+    if((ex.op==='get'||ex.op==='update'||ex.op==='delete') && !idVal){ showToast('Choose a record ID first', 'error'); return; }
+    var result = apiCall(ex.op, ex.resourceKey, opts);
+    if(result.ok && (ex.op==='insert'||ex.op==='update'||ex.op==='delete')) saveDB();
+    ex.result = result.entry;
+    render();
+    return;
+  }
+  if(action==='copy-explorer-request'){ var b1=document.getElementById('explorer-req-block'); if(b1){ copyToClipboard(b1.textContent); showToast('Request JSON copied','success'); } return; }
+  if(action==='copy-explorer-response'){ var b2=document.getElementById('explorer-res-block'); if(b2){ copyToClipboard(b2.textContent); showToast('Response JSON copied','success'); } return; }
+  if(action==='clear-log'){ API_LOG = []; render(); return; }
+
+  if(action==='reset-mock-data'){
+    UI.modal = { size:'narrow', title:'Reset all mock data?', body:
+      '<p style="font-size:13.5px;">This regenerates every advertiser, campaign, placement, ad, creative and performance record. Any changes you made will be lost.</p>'+
+      '<div class="modal-actions"><button class="btn btn-ghost" data-action="close-modal">Cancel</button>'+
+      '<button class="btn btn-danger" data-action="do-reset">Reset data</button></div>' };
+    render();
+    return;
+  }
+  if(action==='do-reset'){
+    resetDB(); API_LOG=[]; UI.listState={}; UI.modal=null; UI.advertiserFilter='all';
+    showToast('Mock data reset', 'success');
+    navigate('#/dashboard'); render();
+    return;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  loadDB();
+  UI.route = parseHash();
+  var app = document.getElementById('app');
+  app.addEventListener('click', onAppClick);
+  app.addEventListener('submit', onAppSubmit, true);
+  app.addEventListener('input', onAppInput);
+  app.addEventListener('change', onAppInput);
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape' && UI.modal){ closeModal(); } });
+  render();
+});
+</script>
+</body>
+</html>
